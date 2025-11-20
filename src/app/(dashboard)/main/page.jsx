@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Badge, Divider, Alert, Modal } from "antd";
+import { Avatar, Badge, Divider, Alert, Modal, Image } from "antd";
 import { useProfile } from "@/context/ProfileContext";
 import {
   UserOutlined,
@@ -34,7 +34,7 @@ function Header({ user }) {
   };
 
   return (
-    <div className="flex justify-between mb-12 px-2">
+    <div className="flex justify-between mb-10 px-2">
       <div
         className="flex items-center gap-3 cursor-pointer select-none"
         onClick={() => setShowProfile(true)}
@@ -395,12 +395,20 @@ export default function MainPage() {
     });
   }, [user]);
 
+  const logo = "/camera/ext/logo.png";
+
   return (
     <>
       <div className="relative flex flex-col justify-center w-full px-4 py-6 bg-[#12549a]">
         <div className="relative z-10">
           <Header user={user} />
-          <Timer />
+          {/* <Timer /> */}
+          <div className="flex justify-center items-center -mb-15">
+            <img
+              src={logo}
+              className="w-[250px] h-auto object-contain invert brightness-0"
+            />
+          </div>
           <Card userData={userData} />
         </div>
       </div>
