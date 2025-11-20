@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Absen Karyawan",
   description: "Project Absensi Karyawan",
+  icons: {
+    icon: "/icon.png", // otomatis ambil dari /public/icon.png
+  },
 };
 
 export default function RootLayout({ children }) {
