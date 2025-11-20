@@ -112,6 +112,8 @@ function Timer() {
 function Card({ userData }) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDescription, setModalDescription] = useState("");
 
   const buttons = [
     {
@@ -143,8 +145,32 @@ function Card({ userData }) {
     const disabled = isCheckIn && userData?.scan_keluar;
     if (disabled) return;
 
-    // Untuk Check Out tanpa scan_masuk → tampilkan Modal
+    // ===========================
+    // 1) Check In → sudah scan_masuk
+    // ===========================
+    if (isCheckIn && userData?.scan_masuk) {
+      setModalTitle("Anda sudah melakukan Check In.");
+      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
+      setIsModalOpen(true);
+      return;
+    }
+
+    // ===========================
+    // 2) Check Out → tanpa scan_masuk
+    // ===========================
     if (isCheckOut && !userData?.scan_masuk) {
+      setModalTitle("Anda belum melakukan Check In.");
+      setModalDescription("Jika sudah absen di kantor, silakan lanjutkan?");
+      setIsModalOpen(true);
+      return;
+    }
+
+    // ===========================
+    // 3) Check Out → sudah scan_keluar
+    // ===========================
+    if (isCheckOut && userData?.scan_keluar) {
+      setModalTitle("Anda sudah melakukan Check Out.");
+      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
       setIsModalOpen(true);
       return;
     }
@@ -184,7 +210,7 @@ function Card({ userData }) {
           </p>
         </div>
       </div>
-      <Divider className="!m-0 text-neutral-200" />
+      {/* <Divider className="!m-0 text-neutral-200" />
       <div className="flex gap-4 justify-between items-center p-4">
         {buttons.map((button, index) => {
           const isCheckIn = button.name === "Check In";
@@ -205,7 +231,7 @@ function Card({ userData }) {
             </div>
           );
         })}
-      </div>
+      </div> */}
 
       <Modal
         open={isModalOpen}
@@ -215,11 +241,9 @@ function Card({ userData }) {
         className="text-center"
       >
         <p className="my-10">
-          <strong className="text-red-500 text-[13.2pt]">
-            Anda belum melakukan Check In.
-          </strong>
+          <strong className="text-red-500 text-[13.2pt]">{modalTitle}</strong>
           <br />
-          Jika sudah absen di kantor, silakan lanjutkan?
+          {modalDescription}
         </p>
         <div className="flex justify-center gap-3 mt-4">
           <button

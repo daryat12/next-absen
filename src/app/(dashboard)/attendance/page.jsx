@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Divider, Empty } from "antd";
+import { Divider, Empty, Modal } from "antd";
 import { LoginOutlined, LogoutOutlined } from "@ant-design/icons";
 
 function Timer() {
@@ -54,6 +54,9 @@ function Timer() {
 
 function Card({ userData }) {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDescription, setModalDescription] = useState("");
 
   const buttons = [
     {
@@ -69,6 +72,51 @@ function Card({ userData }) {
       link: "/camera/out",
     },
   ];
+
+  const handleButtonClick = (button) => {
+    const isCheckIn = button.name === "Check In";
+    const isCheckOut = button.name === "Check Out";
+
+    const disabled = isCheckIn && userData?.scan_keluar;
+    if (disabled) return;
+
+    // ===========================
+    // 1) Check In → sudah scan_masuk
+    // ===========================
+    if (isCheckIn && userData?.scan_masuk) {
+      setModalTitle("Anda sudah melakukan Check In.");
+      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
+      setIsModalOpen(true);
+      return;
+    }
+
+    // ===========================
+    // 2) Check Out → tanpa scan_masuk
+    // ===========================
+    if (isCheckOut && !userData?.scan_masuk) {
+      setModalTitle("Anda belum melakukan Check In.");
+      setModalDescription("Jika sudah absen di kantor, silakan lanjutkan?");
+      setIsModalOpen(true);
+      return;
+    }
+
+    // ===========================
+    // 3) Check Out → sudah scan_keluar
+    // ===========================
+    if (isCheckOut && userData?.scan_keluar) {
+      setModalTitle("Anda sudah melakukan Check Out.");
+      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
+      setIsModalOpen(true);
+      return;
+    }
+
+    router.push(button.link);
+  };
+
+  const handleConfirm = () => {
+    setIsModalOpen(false);
+    router.push("/camera/out");
+  };
 
   return (
     <div className="bg-white rounded-xl relative top-20 shadow-md">
@@ -92,7 +140,7 @@ function Card({ userData }) {
       <div className="flex gap-4 justify-between items-center p-4">
         {buttons.map((button, index) => {
           const isCheckIn = button.name === "Check In";
-          const disabled = isCheckIn && userData?.scan_keluar; // disable jika sudah ada scan_keluar
+          const disabled = isCheckIn && userData?.scan_keluar;
 
           return (
             <div
@@ -102,9 +150,7 @@ function Card({ userData }) {
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                   : button.style
               }`}
-              onClick={() => {
-                if (!disabled) router.push(button.link);
-              }}
+              onClick={() => handleButtonClick(button)}
             >
               {button.icon}
               {button.name}
@@ -112,6 +158,34 @@ function Card({ userData }) {
           );
         })}
       </div>
+
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Peringatan!</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          <strong className="text-red-500 text-[13.2pt]">{modalTitle}</strong>
+          <br />
+          {modalDescription}
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Tidak
+          </button>
+          <button
+            className="w-30 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 cursor-pointer"
+            onClick={handleConfirm}
+          >
+            Lanjut
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
