@@ -8,7 +8,7 @@ import {
   LockOutlined as LockIcon,
   Help as HistoryIcon,
 } from "@mui/icons-material";
-import { CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "@/config/firebase";
@@ -165,8 +165,11 @@ export default function LoginPage() {
 
   if (!authorized)
     return (
-      <div className="flex w-full h-screen items-center justify-center bg-white">
-        <span className="text-sm text-[#12549a]">Loading...</span>
+      <div className="flex flex-col gap-4 w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
+        <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
+          <LoadingOutlined />
+        </div>
+        <span>Loading...</span>
       </div>
     );
 

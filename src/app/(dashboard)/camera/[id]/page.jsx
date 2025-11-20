@@ -542,7 +542,7 @@ export default function CheckDetail() {
           </div>
         )}
         {isLoading && (
-          <div className="bg-black absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
+          <div className="bg-black/50 absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
             <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
               <LoadingOutlined />
             </div>
