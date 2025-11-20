@@ -80,35 +80,6 @@ function Header({ user }) {
   );
 }
 
-function Timer() {
-  const [time, setTime] = useState({ hours: "", minutes: "", seconds: "" });
-
-  useEffect(() => {
-    const updateTimer = () => {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
-      setTime({ hours, minutes, seconds });
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex items-end justify-center text-white -mb-11">
-      <div className="flex items-end font-semibold tracking-wide">
-        <span className="text-6xl">
-          {time.hours}.{time.minutes}
-        </span>
-        <span className="text-3xl">.{time.seconds}</span>
-      </div>
-    </div>
-  );
-}
-
 function Card({ userData }) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -402,12 +373,21 @@ export default function MainPage() {
       <div className="relative flex flex-col justify-center w-full px-4 py-6 bg-[#12549a]">
         <div className="relative z-10">
           <Header user={user} />
-          {/* <Timer /> */}
           <div className="flex justify-center items-center -mb-15">
-            <img
-              src={logo}
-              className="w-[250px] h-auto object-contain invert brightness-0"
-            />
+            <div className="relative w-fit h-fit">
+              <img
+                src={logo}
+                className="w-[250px] h-auto object-contain invert brightness-0 opacity-60"
+              />
+
+              <div
+                className="absolute inset-0 pointer-events-none shine-mask"
+                style={{
+                  WebkitMaskImage: `url(${logo})`,
+                  maskImage: `url(${logo})`,
+                }}
+              ></div>
+            </div>
           </div>
           <Card userData={userData} />
         </div>
