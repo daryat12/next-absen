@@ -78,12 +78,23 @@ function ImageActions({ imageUrl }) {
           onClick={() => setPreviewOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         >
-          <img
-            src={imageUrl}
-            alt="Preview"
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-[95vw] max-h-[95vh] object-contain select-none"
-          />
+          <div className="relative">
+            {/* Tombol close di pojok kanan atas foto */}
+            <div
+              onClick={() => setPreviewOpen(false)}
+              className="absolute -top-3 -right-3 flex items-center justify-center bg-white h-8 w-8 rounded-full shadow cursor-pointer"
+            >
+              <CloseOutlined />
+            </div>
+
+            {/* Gambar */}
+            <img
+              src={imageUrl}
+              alt="Preview"
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-[85vw] max-h-[85vh] object-contain select-none border-8 border-white rounded"
+            />
+          </div>
         </div>
       )}
     </>
