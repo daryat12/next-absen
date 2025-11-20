@@ -185,7 +185,7 @@ function Card({ userData }) {
 
   return (
     <div className="bg-white rounded-xl relative top-20 shadow-md">
-      <div className="flex justify-between p-4">
+      <div className="flex justify-between p-4 pr-8">
         <div className="flex gap-4">
           <FieldTimeOutlined className="text-[40pt] !text-[#12549a]" />
           <div className="flex flex-col">
