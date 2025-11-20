@@ -17,14 +17,14 @@ function Drawer() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   const router = useRouter();
 
   const handleLogout = () => {
-    sessionStorage.removeItem("user");
+    localStorage.removeItem("user");
     router.push("/");
   };
 
@@ -43,7 +43,7 @@ function Drawer() {
             initial={{ x: -400 }}
             animate={{ x: 0 }}
             exit={{ x: -400 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            transition={{ duration: 0.3, ease: "easeIn" }}
             className="absolute top-0 left-0 h-full bg-white shadow-lg z-40 w-full sm:w-sm py-4 px-6 flex flex-col justify-between"
           >
             <div>
@@ -257,7 +257,7 @@ export default function MainLayout({ children }) {
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const user = sessionStorage.getItem("user");
+    const user = localStorage.getItem("user");
 
     if (!user) {
       router.replace("/"); // redirect ke halaman login

@@ -181,7 +181,7 @@ export default function AttendanceListPage() {
   };
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setOffset(0);
@@ -199,7 +199,7 @@ export default function AttendanceListPage() {
       if (loading || !hasMore) return;
       const threshold = 200; // px from bottom to trigger
       if (el.scrollHeight - el.scrollTop - el.clientHeight < threshold) {
-        const storedUser = sessionStorage.getItem("user");
+        const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           fetchAttendance(parsedUser, offset, true);
@@ -235,7 +235,7 @@ export default function AttendanceListPage() {
       return `${hours} jam ${minutes} menit`;
     })();
 
-    const baseUrl = "https://absen.radiance.id/public/absensi";
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/absensi`;
 
     return {
       id: item.id,

@@ -388,7 +388,7 @@ export default function CheckDetail() {
   };
 
   const savePhoto = () => {
-    const storedUser = sessionStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
 
@@ -423,7 +423,7 @@ export default function CheckDetail() {
   };
 
   const savePinLokasi = async (values) => {
-    const storedUser = sessionStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
 

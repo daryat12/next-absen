@@ -24,7 +24,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     setLogVisible(true);
-    const user = sessionStorage.getItem("user");
+    const user = localStorage.getItem("user");
     if (user) {
       router.replace("/main");
     } else {
@@ -46,7 +46,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.message === "success") {
-        sessionStorage.setItem("user", JSON.stringify(data.data));
+        localStorage.setItem("user", JSON.stringify(data.data));
         setAlert({ type: "success", message: "Login berhasil!", show: true });
 
         // redirect setelah sedikit delay agar user bisa lihat alert
@@ -94,7 +94,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.message === "success") {
-        sessionStorage.setItem("user", JSON.stringify(data.data));
+        localStorage.setItem("user", JSON.stringify(data.data));
         setAlert({ type: "success", message: "Login berhasil!", show: true });
         setTimeout(() => router.push("/main"), 1000);
       } else {
