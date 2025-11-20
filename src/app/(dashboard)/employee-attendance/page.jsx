@@ -6,6 +6,7 @@ import {
   FilterOutlined,
   EyeOutlined,
   DownloadOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import BottomPopup from "@/components/BottomPopup";
 import locale from "antd/es/date-picker/locale/id_ID";

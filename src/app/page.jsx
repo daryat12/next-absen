@@ -322,7 +322,7 @@ export default function LoginPage() {
           borderBottom: "1px solid #f0f0f0",
           width: "100%",
         }}
-        className="md:!w-md"
+        className="!w-full sm:!w-sm"
       >
         {/* Isi List Log */}
         <List

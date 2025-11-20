@@ -2,7 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Tag, DatePicker, Empty } from "antd";
-import { EyeOutlined, DownloadOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  DownloadOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 import BottomPopup from "@/components/BottomPopup";
 import locale from "antd/es/date-picker/locale/id_ID";
 import dayjs from "dayjs";

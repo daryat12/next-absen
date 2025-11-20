@@ -12,6 +12,7 @@ import {
   CheckOutlined,
   SwapOutlined,
   CloseOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import BottomPopup from "@/components/BottomPopup";
 
@@ -95,8 +96,19 @@ export default function CheckDetail() {
   const logoWatermark = "/camera/ext/logo.png";
   const soundCamera = "/camera/ext/shutter.mp3";
 
+  const disableBack = () => {
+    window.onpopstate = function () {
+      return false;
+    };
+  };
+
+  const enableBack = () => {
+    window.onpopstate = null;
+  };
+
   const fetchData = async (data) => {
     setIsLoading(true);
+    disableBack();
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/insAbsen`,
@@ -113,11 +125,13 @@ export default function CheckDetail() {
       const result = await response.json();
 
       if (result.status) {
+        setIsLoading(false);
         showAlert("success", result.message);
         // reset state setelah upload
         setSaveCoords(null);
         setSaveAddress(null);
         setSaveTime(defaultTime);
+        enableBack();
         setTimeout(() => {
           router.back();
           setPhoto(null);
@@ -132,6 +146,7 @@ export default function CheckDetail() {
 
   const fetchLocation = async (data) => {
     setIsLoading(true);
+    disableBack();
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/insPinLokasi`,
@@ -148,12 +163,14 @@ export default function CheckDetail() {
       const result = await response.json();
 
       if (result.status) {
+        setIsLoading(false);
         setIsDetailVisible(false);
         showAlert("success", result.message);
         // reset state setelah upload
         setSaveCoords(null);
         setSaveAddress(null);
         setSaveTime(defaultTime);
+        enableBack();
         setTimeout(() => {
           router.back();
           setPhoto(null);
@@ -520,8 +537,16 @@ export default function CheckDetail() {
     <div className="relative flex justify-center w-full h-full bg-black overflow-hidden">
       <div className="relative w-full h-full sm:aspect-[9/16] sm:w-auto overflow-hidden">
         {error && (
-          <div className="absolute top-0 h-full w-full z-[1000] flex justify-center items-center text-white text-xs select-none">
+          <div className="bg-black absolute top-0 h-full w-full z-[1000] flex justify-center items-center text-white text-xs select-none">
             {error}
+          </div>
+        )}
+        {isLoading && (
+          <div className="bg-black absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
+            <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
+              <LoadingOutlined />
+            </div>
+            <span>Sedang memproses data...</span>
           </div>
         )}
         <div

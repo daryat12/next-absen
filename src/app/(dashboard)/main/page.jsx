@@ -285,27 +285,47 @@ export default function MainPage() {
       name: "Buletin",
       icon: <NewsIcon />,
       disable: true,
+      visible: false,
       link: "/izin",
     },
-    // { name: "Izin", icon: <FileDoneOutlined />, disable: true, link: "/izin" },
-    // { name: "Kontribusi", icon: <GiftOutlined />, disable: true },
-    // { name: "Penawaran", icon: <DollarCircleOutlined />, disable: true },
+    // {
+    //   name: "Izin",
+    //   icon: <FileDoneOutlined />,
+    //   disable: true,
+    //   visible: false,
+    //   link: "/izin",
+    // },
+    // {
+    //   name: "Kontribusi",
+    //   icon: <GiftOutlined />,
+    //   disable: true,
+    //   visible: true,
+    // },
+    // {
+    //   name: "Penawaran",
+    //   icon: <DollarCircleOutlined />,
+    //   disable: true,
+    //   visible: true,
+    // },
     {
       name: "Kehadiran",
       icon: <TeamOutlined />,
       disable: true,
+      visible: true,
       link: "/employee-attendance",
     },
     {
       name: "Approval",
       icon: <CheckOutlined />,
       disable: true,
+      visible: true,
       link: "/approval",
     },
     {
       name: "Perbaikan",
       icon: <ToolOutlined />,
       disable: true,
+      visible: true,
       link: "https://docs.google.com/forms/d/e/1FAIpQLSf7NCLF9IFJ3ehv45B4WKWh2Whn-WrgI6_SHgWZ32eyMe4opw/viewform?pli=1",
       external: true,
     },
@@ -313,6 +333,7 @@ export default function MainPage() {
       name: "Identifikasi",
       icon: <SearchOutlined />,
       disable: true,
+      visible: true,
       link: "https://docs.google.com/spreadsheets/d/1uDpbqk6b4YLYNC9ds9iZCUaretgE1Vx5hl9r-1JLH6Y/edit?gid=22500260#gid=22500260",
       external: true,
     },
@@ -320,6 +341,7 @@ export default function MainPage() {
       name: "Lokasi",
       icon: <AddLocationAltOutlinedIcon />,
       disable: false,
+      visible: false,
       link: "/location",
     },
   ];
@@ -335,11 +357,13 @@ export default function MainPage() {
 
       // Jika user Check Absen Online → disable beberapa menu
       if (hasCheckAbsen && ["Kehadiran", "Approval"].includes(menu.name)) {
+        updatedMenu.visible = false;
         updatedMenu.disable = false;
       }
 
       // Jika user Teknisi → aktifkan Perbaikan & Identifikasi
       if (isTeknisi && ["Perbaikan", "Identifikasi"].includes(menu.name)) {
+        updatedMenu.visible = false;
         updatedMenu.disable = false;
       }
 
@@ -361,46 +385,50 @@ export default function MainPage() {
         <div className="font-semibold mb-4">Menu Utama</div>
 
         <div className="grid grid-cols-4 gap-4 items-start mb-10">
-          {menus.map((menu, index) => {
-            const content = (
-              <div
-                className={`flex flex-col items-center justify-center ${
-                  !menu.disable ? "cursor-pointer" : "cursor-not-allowed"
-                }`}
-              >
+          {menus
+            .filter((menu) => !menu.visible)
+            .map((menu, index) => {
+              const content = (
                 <div
-                  className={`w-14 h-14 flex items-center justify-center rounded-full transition text-[18pt] bg-white ${
-                    !menu.disable
-                      ? "shadow-md hover:bg-blue-500 hover:text-white text-blue-500"
-                      : "text-neutral-300"
+                  className={`flex flex-col items-center justify-center ${
+                    !menu.disable ? "cursor-pointer" : "cursor-not-allowed"
                   }`}
                 >
-                  {menu.icon}
+                  <div
+                    className={`w-14 h-14 flex items-center justify-center rounded-full transition text-[18pt] bg-white ${
+                      !menu.disable
+                        ? "shadow-md hover:bg-blue-500 hover:text-white text-blue-500"
+                        : "text-neutral-300"
+                    }`}
+                  >
+                    {menu.icon}
+                  </div>
+                  <span className="text-xs text-center mt-2 text-neutral-700 font-medium">
+                    {menu.name}
+                  </span>
                 </div>
-                <span className="text-xs text-center mt-2 text-neutral-700 font-medium">
-                  {menu.name}
-                </span>
-              </div>
-            );
-
-            if (menu.disable) return <div key={index}>{content}</div>;
-            if (menu.external)
-              return (
-                <a
-                  key={index}
-                  href={menu.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {content}
-                </a>
               );
-            return (
-              <Link key={index} href={menu.link}>
-                {content}
-              </Link>
-            );
-          })}
+
+              if (menu.disable) return <div key={index}>{content}</div>;
+
+              if (menu.external)
+                return (
+                  <a
+                    key={index}
+                    href={menu.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {content}
+                  </a>
+                );
+
+              return (
+                <Link key={index} href={menu.link}>
+                  {content}
+                </Link>
+              );
+            })}
         </div>
       </div>
     </>
