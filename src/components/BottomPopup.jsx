@@ -1,0 +1,98 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { CloseOutlined } from "@ant-design/icons";
+
+export default function BottomPopup({ open, onClose, children, title }) {
+  const controls = useAnimation();
+  const [startY, setStartY] = useState(0);
+
+  // Auto scroll ke bawah
+  const scrollToBottom = () =>
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
+  // Saat popup baru dibuka, pastikan muncul dari bawah
+  useEffect(() => {
+    if (open) {
+      // Set posisi awal sebelum animasi
+      scrollToBottom();
+      controls.set({ y: "100%" });
+      // Jalankan animasi naik
+      controls.start({
+        y: 0,
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      });
+    }
+  }, [open, controls]);
+
+  const handleDragStart = (_, info) => {
+    setStartY(info.point.y);
+  };
+
+  const handleDragEnd = async (_, info) => {
+    const dragDistance = info.point.y - startY;
+
+    // Jika drag ke bawah cukup jauh
+    if (dragDistance > 150) {
+      await controls.start({
+        y: "110%",
+        transition: { duration: 0.3, ease: "easeIn" },
+      });
+      onClose?.();
+    } else {
+      // Kembalikan ke posisi awal
+      controls.start({
+        y: 0,
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      });
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Background overlay */}
+          <motion.div
+            className="fixed inset-0 bg-black/50 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Popup container */}
+          <motion.div
+            key="popup"
+            className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-lg max-h-[90vh] flex flex-col touch-none"
+            initial={{ y: "100%" }}
+            animate={controls}
+            exit={{ y: "110%" }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 1 }}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex justify-center mt-3">
+              <div className="w-12 h-1.5 bg-neutral-300 rounded-full" />
+            </div>
+
+            <div className="flex justify-between items-center px-8 py-2">
+              <h3 className="text-lg font-semibold">{title || ""}</h3>
+              <button
+                className="flex justify-center items-center aspect-square w-8 h-auto active:bg-neutral-200 rounded-full cursor-pointer"
+                onClick={onClose}
+              >
+                <CloseOutlined />
+              </button>
+            </div>
+            <div className="relative overflow-y-auto flex-1 px-8 pb-6 pt-2">
+              {children}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
