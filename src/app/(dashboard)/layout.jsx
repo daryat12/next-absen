@@ -197,24 +197,30 @@ function FooterMenu({ isHiddenFooter = true }) {
                       </div>
                       <span
                         className={`font-medium relative top-1 ${
-                          isActive ? "text-blue-600" : ""
+                          isActive ? "text-neutral-600" : ""
                         }`}
                       >
                         {menu.name}
                       </span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center">
+                    <div
+                      className={`h-full w-30 flex flex-col items-center ${
+                        isActive
+                          ? "bg-gradient-to-b from-blue-600/50 to-transparent border-t-3 border-blue-600 pt-[3px]"
+                          : "pt-[6px]"
+                      }`}
+                    >
                       <div
                         className={`text-xl mb-1 cursor-pointer ${
-                          isActive ? "text-blue-600" : ""
+                          isActive ? "text-[#12549a]" : ""
                         }`}
                       >
                         {menu.icon}
                       </div>
                       <span
                         className={`font-medium ${
-                          isActive ? "text-blue-600" : ""
+                          isActive ? "text-neutral-600" : ""
                         }`}
                       >
                         {menu.name}
@@ -233,11 +239,10 @@ function FooterMenu({ isHiddenFooter = true }) {
 
 function LayoutContent({ children }) {
   const pathname = usePathname();
-  const visibleNavBack = ["/main", "/attendance"];
-  const visibleFooter = ["/main", "/attendance", "/history"];
+  const visibleMenu = ["/main", "/attendance", "/history"];
   const isHiddenNavBack =
-    visibleNavBack.includes(pathname) || pathname.startsWith("/camera/");
-  const isHiddenFooter = !visibleFooter.includes(pathname);
+    visibleMenu.includes(pathname) || pathname.startsWith("/camera/");
+  const isHiddenFooter = !visibleMenu.includes(pathname);
 
   return (
     <div className="flex w-full h-screen items-center justify-center bg-neutral-950 text-[11pt] text-neutral-600">

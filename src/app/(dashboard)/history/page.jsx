@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Tag, DatePicker, Empty } from "antd";
+import { Tag, DatePicker, Empty, Modal } from "antd";
 import {
   EyeOutlined,
   DownloadOutlined,
@@ -13,9 +13,10 @@ import dayjs from "dayjs";
 import "dayjs/locale/id";
 dayjs.locale("id");
 
-function ImageActions({ imageUrl }) {
+function ImageActions({ imageUrl, description }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isImageValid, setIsImageValid] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -57,22 +58,27 @@ function ImageActions({ imageUrl }) {
     }
   };
 
+  const handleConfirm = () => {
+    setIsModalOpen(false); // Tutup modal
+    handleDownload(); // Lanjut download
+  };
+
   return (
     <>
       {isImageValid && (
         <div className="flex gap-1">
           <div
             onClick={() => setPreviewOpen(true)}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <EyeOutlined />
+            <EyeOutlined /> <span className="text-[8pt]">Preview</span>
           </div>
 
           <div
-            onClick={handleDownload}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            onClick={() => setIsModalOpen(true)}
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <DownloadOutlined />
+            <DownloadOutlined /> <span className="text-[8pt]">Download</span>
           </div>
         </div>
       )}
@@ -96,11 +102,38 @@ function ImageActions({ imageUrl }) {
               src={imageUrl}
               alt="Preview"
               onClick={(e) => e.stopPropagation()}
-              className="max-w-[85vw] max-h-[85vh] object-contain select-none border-8 border-white rounded"
+              className="max-w-[95vw] max-h-[95vh] object-contain select-none border-8 border-white rounded"
             />
           </div>
         </div>
       )}
+
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Download</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          Apa anda ingin mendownload foto {description.toLowerCase()}. jika ya,
+          silakan lanjutkan.
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Tidak
+          </button>
+          <button
+            className="w-30 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 cursor-pointer"
+            onClick={handleConfirm}
+          >
+            Lanjut
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
@@ -290,7 +323,11 @@ export default function HistoryPage() {
 
   return (
     <>
-      <div className="w-full fixed md:absolute top-12 z-10 bg-gray-50 py-5">
+      <div className="w-full fixed md:absolute top-0 z-10 bg-gray-50 pb-5">
+        <div className="flex justify-center items-center w-full h-14 bg-white border border-gray-200 text-xl mb-5">
+          <span className="select-none text-center">Histori</span>
+        </div>
+
         <div className="mt-2 px-6 w-full flex items-center gap-3">
           <DatePicker
             locale={locale}
@@ -310,7 +347,7 @@ export default function HistoryPage() {
         {/* scrollable list container -> attach ref here */}
         <div
           ref={listRef}
-          className="w-full py-4 px-6 flex-1 flex flex-col gap-3 overflow-y-auto"
+          className="w-full pt-4 pb-10 px-6 flex-1 flex flex-col gap-3 overflow-y-auto"
         >
           {filteredData.length > 0 ? (
             filteredData.map((item) => (
@@ -320,8 +357,8 @@ export default function HistoryPage() {
                 className="bg-white border border-gray-300 rounded-2xl p-4 cursor-pointer transition transform hover:border-blue-500 active:border-blue-500"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold text-blue-500">
-                    {item.name}
+                  <h2 className="text-sm font-semibold text-blue-500">
+                    {dayjs(item.date).format("dddd, DD MMMM YYYY")}
                   </h2>
                   {item.status === "approved" ? (
                     <Tag color="green" className="!mr-0">
@@ -333,9 +370,6 @@ export default function HistoryPage() {
                     </Tag>
                   )}
                 </div>
-                <p className="text-xs text-gray-400">
-                  {dayjs(item.date).format("dddd, DD MMMM YYYY")}
-                </p>
                 <div className="flex items-center justify-between mt-2 text-sm text-gray-700">
                   <p>
                     <strong>Masuk:</strong> {formatTime(item.checkIn)}
@@ -387,6 +421,7 @@ export default function HistoryPage() {
                     {selectedRecord.checkIn && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationIn.image}
+                        description="Masuk"
                       />
                     )}
                   </div>
@@ -398,6 +433,7 @@ export default function HistoryPage() {
                     {selectedRecord.checkOut && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationOut.image}
+                        description="Pulang"
                       />
                     )}
                   </div>

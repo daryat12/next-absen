@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Tag, DatePicker, Empty, Input, Select, Badge } from "antd";
+import { Tag, DatePicker, Empty, Input, Select, Badge, Modal } from "antd";
 import {
   FilterOutlined,
   EyeOutlined,
@@ -14,9 +14,10 @@ import dayjs from "dayjs";
 import "dayjs/locale/id";
 dayjs.locale("id");
 
-function ImageActions({ imageUrl }) {
+function ImageActions({ imageUrl, description }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isImageValid, setIsImageValid] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -58,22 +59,27 @@ function ImageActions({ imageUrl }) {
     }
   };
 
+  const handleConfirm = () => {
+    setIsModalOpen(false); // Tutup modal
+    handleDownload(); // Lanjut download
+  };
+
   return (
     <>
       {isImageValid && (
         <div className="flex gap-1">
           <div
             onClick={() => setPreviewOpen(true)}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <EyeOutlined />
+            <EyeOutlined /> <span className="text-[8pt]">Preview</span>
           </div>
 
           <div
-            onClick={handleDownload}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            onClick={() => setIsModalOpen(true)}
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <DownloadOutlined />
+            <DownloadOutlined /> <span className="text-[8pt]">Download</span>
           </div>
         </div>
       )}
@@ -97,11 +103,38 @@ function ImageActions({ imageUrl }) {
               src={imageUrl}
               alt="Preview"
               onClick={(e) => e.stopPropagation()}
-              className="max-w-[85vw] max-h-[85vh] object-contain select-none border-8 border-white rounded"
+              className="max-w-[95vw] max-h-[95vh] object-cover select-none border-8 border-white rounded"
             />
           </div>
         </div>
       )}
+
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Download</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          Apa anda ingin mendownload foto {description.toLowerCase()}. jika ya,
+          silakan lanjutkan.
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Tidak
+          </button>
+          <button
+            className="w-30 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 cursor-pointer"
+            onClick={handleConfirm}
+          >
+            Lanjut
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
@@ -150,6 +183,7 @@ export default function AttendanceListPage() {
           },
           body: JSON.stringify({
             tanggal: tanggalPayload,
+            group: parsedUser.group_name?.includes("Super Admin") || "",
             cabang: parsedUser.alias || "",
             dataTipe: "all",
             limit,
@@ -248,6 +282,7 @@ export default function AttendanceListPage() {
     })();
 
     const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/absensi`;
+    const cleanName = item.nama.replace(/\s*\([^)]*\)/g, "").trim();
 
     return {
       id: item.id,
@@ -267,7 +302,7 @@ export default function AttendanceListPage() {
           lat: latMasuk,
           lng: lngMasuk,
           image: item.foto_scan_masuk
-            ? `${baseUrl}/${item.nama}-${item.cabang_alias}/${item.foto_scan_masuk}`
+            ? `${baseUrl}/${cleanName}-${item.cabang_alias}/${item.foto_scan_masuk}`
             : null,
         },
         locationOut: {
@@ -275,7 +310,7 @@ export default function AttendanceListPage() {
           lat: latKeluar,
           lng: lngKeluar,
           image: item.foto_scan_keluar
-            ? `${baseUrl}/${item.nama}-${item.cabang_alias}/${item.foto_scan_keluar}`
+            ? `${baseUrl}/${cleanName}-${item.cabang_alias}/${item.foto_scan_keluar}`
             : null,
         },
       },
@@ -441,6 +476,7 @@ export default function AttendanceListPage() {
                     {selectedRecord.checkIn && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationIn.image}
+                        description="Masuk"
                       />
                     )}
                   </div>
@@ -452,6 +488,7 @@ export default function AttendanceListPage() {
                     {selectedRecord.checkOut && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationOut.image}
+                        description="Pulang"
                       />
                     )}
                   </div>

@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { Avatar, Badge, Divider, Alert, Modal, Image } from "antd";
+import { Avatar, Badge, Alert } from "antd";
 import { useProfile } from "@/context/ProfileContext";
 import {
   UserOutlined,
   BellFilled,
   FieldTimeOutlined,
-  LoginOutlined,
-  LogoutOutlined,
   GiftOutlined,
   DollarCircleOutlined,
   FileDoneOutlined,
@@ -81,26 +78,6 @@ function Header({ user }) {
 }
 
 function Card({ userData }) {
-  const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalDescription, setModalDescription] = useState("");
-
-  const buttons = [
-    {
-      name: "Check In",
-      icon: <LoginOutlined />,
-      style: "text-blue-500 hover:bg-blue-300 bg-blue-200",
-      link: "/camera/in",
-    },
-    {
-      name: "Check Out",
-      icon: <LogoutOutlined />,
-      style: "text-orange-500 hover:bg-orange-300 bg-orange-200",
-      link: "/camera/out",
-    },
-  ];
-
   const today = new Date();
   const hari = today.toLocaleDateString("id-ID", { weekday: "long" });
   const tanggal = today.toLocaleDateString("id-ID", {
@@ -108,51 +85,6 @@ function Card({ userData }) {
     month: "long",
     year: "numeric",
   });
-
-  const handleButtonClick = (button) => {
-    const isCheckIn = button.name === "Check In";
-    const isCheckOut = button.name === "Check Out";
-
-    const disabled = isCheckIn && userData?.scan_keluar;
-    if (disabled) return;
-
-    // ===========================
-    // 1) Check In → sudah scan_masuk
-    // ===========================
-    if (isCheckIn && userData?.scan_masuk) {
-      setModalTitle("Anda sudah melakukan Check In.");
-      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
-      setIsModalOpen(true);
-      return;
-    }
-
-    // ===========================
-    // 2) Check Out → tanpa scan_masuk
-    // ===========================
-    if (isCheckOut && !userData?.scan_masuk) {
-      setModalTitle("Anda belum melakukan Check In.");
-      setModalDescription("Jika sudah absen di kantor, silakan lanjutkan?");
-      setIsModalOpen(true);
-      return;
-    }
-
-    // ===========================
-    // 3) Check Out → sudah scan_keluar
-    // ===========================
-    if (isCheckOut && userData?.scan_keluar) {
-      setModalTitle("Anda sudah melakukan Check Out.");
-      setModalDescription("Jika ingin mengulang, silakan lanjutkan?");
-      setIsModalOpen(true);
-      return;
-    }
-
-    router.push(button.link);
-  };
-
-  const handleConfirm = () => {
-    setIsModalOpen(false);
-    router.push("/camera/out");
-  };
 
   return (
     <div className="bg-white rounded-xl relative top-20 shadow-md">
@@ -181,56 +113,6 @@ function Card({ userData }) {
           </p>
         </div>
       </div>
-      {/* <Divider className="!m-0 text-neutral-200" />
-      <div className="flex gap-4 justify-between items-center p-4">
-        {buttons.map((button, index) => {
-          const isCheckIn = button.name === "Check In";
-          const disabled = isCheckIn && userData?.scan_keluar;
-
-          return (
-            <div
-              key={index}
-              className={`flex items-center justify-center gap-2 w-full font-bold rounded-lg py-3 select-none cursor-pointer ${
-                disabled
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : button.style
-              }`}
-              onClick={() => handleButtonClick(button)}
-            >
-              {button.icon}
-              {button.name}
-            </div>
-          );
-        })}
-      </div> */}
-
-      <Modal
-        open={isModalOpen}
-        title={<h1 className="text-2xl">Peringatan!</h1>}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null} // custom footer
-        className="text-center"
-      >
-        <p className="my-10">
-          <strong className="text-red-500 text-[13.2pt]">{modalTitle}</strong>
-          <br />
-          {modalDescription}
-        </p>
-        <div className="flex justify-center gap-3 mt-4">
-          <button
-            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
-            onClick={() => setIsModalOpen(false)}
-          >
-            Tidak
-          </button>
-          <button
-            className="w-30 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 cursor-pointer"
-            onClick={handleConfirm}
-          >
-            Lanjut
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 }
@@ -281,7 +163,7 @@ export default function MainPage() {
       icon: <NewsIcon />,
       disable: true,
       visible: false,
-      link: "/izin",
+      link: "/bulletin",
     },
     // {
     //   name: "Izin",
@@ -295,12 +177,14 @@ export default function MainPage() {
     //   icon: <GiftOutlined />,
     //   disable: true,
     //   visible: true,
+    //   link: "/kontribusi",
     // },
     // {
     //   name: "Penawaran",
     //   icon: <DollarCircleOutlined />,
     //   disable: true,
     //   visible: true,
+    //   link: "/penawaran",
     // },
     {
       name: "Kehadiran",
@@ -346,6 +230,16 @@ export default function MainPage() {
 
     const hasCheckAbsen = user.group_name?.includes("Online Absen Check");
     const isTeknisi = user.group_name?.includes("Online Teknisi");
+    const isSuperAdmin = user.group_name?.includes("Super Admin");
+
+    // Jika Super Admin → semua menu buka, disable = false, visible = true
+    if (isSuperAdmin) {
+      return baseMenus.map((menu) => ({
+        ...menu,
+        disable: false,
+        visible: false,
+      }));
+    }
 
     return baseMenus.map((menu) => {
       let updatedMenu = { ...menu };

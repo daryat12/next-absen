@@ -676,7 +676,7 @@ export default function CheckDetail() {
               alt="Preview"
               className="absolute top-0 left-1/2 -translate-x-1/2 w-auto h-full object-cover aspect-[9/16]"
             />
-            {!isLoading && !isDetailVisible && (
+            {!isLoading && !alertConfig.show && !isDetailVisible && (
               <div className="absolute bottom-8 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
                 <button
                   onClick={reTakePhoto}

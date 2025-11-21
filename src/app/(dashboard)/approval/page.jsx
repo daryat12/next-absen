@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Tag, Empty, Alert, Badge, Input, Popover } from "antd"; // ✅ Tambahkan Alert
+import { Tag, Empty, Alert, Badge, Input, Popover, Modal } from "antd"; // ✅ Tambahkan Alert
 import {
   EyeOutlined,
   DownloadOutlined,
@@ -13,9 +13,10 @@ import dayjs from "dayjs";
 import "dayjs/locale/id";
 dayjs.locale("id");
 
-function ImageActions({ imageUrl }) {
+function ImageActions({ imageUrl, description }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isImageValid, setIsImageValid] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -57,22 +58,27 @@ function ImageActions({ imageUrl }) {
     }
   };
 
+  const handleConfirm = () => {
+    setIsModalOpen(false); // Tutup modal
+    handleDownload(); // Lanjut download
+  };
+
   return (
     <>
       {isImageValid && (
         <div className="flex gap-1">
           <div
             onClick={() => setPreviewOpen(true)}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <EyeOutlined />
+            <EyeOutlined /> <span className="text-[8pt]">Preview</span>
           </div>
 
           <div
-            onClick={handleDownload}
-            className="flex items-center justify-center aspect-square w-7 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
+            onClick={() => setIsModalOpen(true)}
+            className="flex gap-1 items-center justify-center px-2 py-1 bg-white hover:bg-gray-200 border border-gray-300 rounded-md cursor-pointer"
           >
-            <DownloadOutlined />
+            <DownloadOutlined /> <span className="text-[8pt]">Download</span>
           </div>
         </div>
       )}
@@ -96,16 +102,44 @@ function ImageActions({ imageUrl }) {
               src={imageUrl}
               alt="Preview"
               onClick={(e) => e.stopPropagation()}
-              className="max-w-[85vw] max-h-[85vh] object-contain select-none border-8 border-white rounded"
+              className="max-w-[95vw] max-h-[95vh] object-contain select-none border-8 border-white rounded"
             />
           </div>
         </div>
       )}
+
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Download</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          Apa anda ingin mendownload foto {description.toLowerCase()}. jika ya,
+          silakan lanjutkan.
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Tidak
+          </button>
+          <button
+            className="w-30 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 cursor-pointer"
+            onClick={handleConfirm}
+          >
+            Lanjut
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
 
 export default function ApprovalPage() {
+  const [userClient, setUserClient] = useState({});
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -171,6 +205,35 @@ export default function ApprovalPage() {
     }
   };
 
+  const fetchRemoveData = async (data) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/removeAbsen`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.status) {
+        showAlert("success", result.message);
+      } else {
+        showAlert("danger", result.message || "Gagal menghapus data!");
+      }
+    } catch (error) {
+      console.error("Gagal menghapus data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const fetchAttendance = async (parsedUser, newOffset = 0, append = false) => {
     try {
       setLoading(true);
@@ -183,6 +246,7 @@ export default function ApprovalPage() {
             "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
           },
           body: JSON.stringify({
+            group: parsedUser.group_name?.includes("Super Admin") || "",
             cabang: parsedUser.alias || "",
             dataTipe: "waiting",
             limit,
@@ -228,6 +292,7 @@ export default function ApprovalPage() {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
+      setUserClient(parsedUser);
       setOffset(0);
       setHasMore(true);
       setUserAttendance([]);
@@ -280,6 +345,7 @@ export default function ApprovalPage() {
     })();
 
     const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/absensi`;
+    const cleanName = item.nama.replace(/\s*\([^)]*\)/g, "").trim();
 
     return {
       id: item.id,
@@ -299,7 +365,7 @@ export default function ApprovalPage() {
           lat: latMasuk,
           lng: lngMasuk,
           image: item.foto_scan_masuk
-            ? `${baseUrl}/${item.nama}-${item.cabang_alias}/${item.foto_scan_masuk}`
+            ? `${baseUrl}/${cleanName}-${item.cabang_alias}/${item.foto_scan_masuk}`
             : null,
         },
         locationOut: {
@@ -307,7 +373,7 @@ export default function ApprovalPage() {
           lat: latKeluar,
           lng: lngKeluar,
           image: item.foto_scan_keluar
-            ? `${baseUrl}/${item.nama}-${item.cabang_alias}/${item.foto_scan_keluar}`
+            ? `${baseUrl}/${cleanName}-${item.cabang_alias}/${item.foto_scan_keluar}`
             : null,
         },
       },
@@ -340,7 +406,19 @@ export default function ApprovalPage() {
     }
   };
 
-  // ✅ Fungsi Approve + tampilkan Alert sukses
+  const handleDelete = (id) => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      const payloadData = {
+        id,
+        username: parsedUser.username,
+      };
+
+      fetchRemoveData(payloadData);
+    }
+  };
+
   const handleApprove = (id) => {
     handleUpadate(id);
 
@@ -350,6 +428,16 @@ export default function ApprovalPage() {
           item.id === id ? { ...item, status_approved: "1" } : item
         )
       );
+
+      setIsDetailVisible(false);
+    }
+  };
+
+  const handleRemove = (id) => {
+    handleDelete(id);
+
+    if (!isLoading) {
+      setUserAttendance((prev) => prev.filter((item) => item.id !== id));
 
       setIsDetailVisible(false);
     }
@@ -378,16 +466,18 @@ export default function ApprovalPage() {
     setIsFilterVisible(false);
   };
 
+  const isSuperAdmin = userClient.group_name?.includes("Super Admin");
+
   return (
     <>
       {/* 🔹 Header Filter Bar */}
-      <Popover content="Filter" placement="left">
+      <Popover content="Filter" placement="left" zIndex={40}>
         <button
           onClick={() => setIsFilterVisible(true)}
-          className="fixed md:absolute right-6 bottom-6 z-30 flex justify-center items-center gap-2 h-12 w-auto aspect-square rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-500 transition cursor-pointer shadow-lg"
+          className="fixed md:absolute right-6 bottom-6 z-30 flex justify-center items-center gap-2 w-14 h-14 aspect-square rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-500 transition cursor-pointer shadow-lg"
         >
           <Badge dot={isFilterActive} offset={[-2, 3]}>
-            <FilterOutlined />
+            <FilterOutlined className="text-xl !text-gray-500" />
           </Badge>
         </button>
       </Popover>
@@ -458,6 +548,7 @@ export default function ApprovalPage() {
                     {selectedRecord.checkIn && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationIn.image}
+                        description="Masuk"
                       />
                     )}
                   </div>
@@ -469,6 +560,7 @@ export default function ApprovalPage() {
                     {selectedRecord.checkOut && (
                       <ImageActions
                         imageUrl={selectedRecord.detail.locationOut.image}
+                        description="Pulang"
                       />
                     )}
                   </div>
@@ -519,22 +611,35 @@ export default function ApprovalPage() {
                   )}
               </div>
 
-              {selectedRecord.status === "waiting" && (
+              <div className="flex flex-col gap-2 mt-8">
+                {selectedRecord.status === "waiting" && (
+                  <>
+                    <button
+                      onClick={() => handleApprove(selectedRecord.id)}
+                      className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md cursor-pointer"
+                    >
+                      Approved
+                    </button>
+
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() => handleRemove(selectedRecord.id)}
+                        className="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md cursor-pointer"
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </>
+                )}
                 <button
-                  onClick={() => handleApprove(selectedRecord.id)}
-                  className="w-full mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md cursor-pointer"
+                  onClick={() => setIsDetailVisible(false)}
+                  className={`w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer ${
+                    selectedRecord.status === "waiting" ? "" : "mt-4"
+                  }`}
                 >
-                  Approved
+                  Tutup
                 </button>
-              )}
-              <button
-                onClick={() => setIsDetailVisible(false)}
-                className={`w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer ${
-                  selectedRecord.status === "waiting" ? "" : "mt-4"
-                }`}
-              >
-                Tutup
-              </button>
+              </div>
             </div>
           )}
         </BottomPopup>
