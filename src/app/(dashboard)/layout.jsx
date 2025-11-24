@@ -8,8 +8,9 @@ import {
   CloseOutlined,
   UserOutlined,
   LoadingOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
-import { Divider, Avatar } from "antd";
+import { Divider, Avatar, Image } from "antd";
 import { ProfileProvider, useProfile } from "@/context/ProfileContext"; // ✅ Import useProfile juga
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import FingerprintRoundedIcon from "@mui/icons-material/FingerprintRounded";
@@ -19,6 +20,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 function Drawer() {
   const { showProfile, setShowProfile } = useProfile(); // ✅ ambil dari context
   const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -71,12 +73,41 @@ function Drawer() {
               </div>
               <Divider className="!my-4" />
               <div className="flex flex-col items-center w-full px-4">
-                <Avatar
-                  size={150}
-                  src={user?.photo}
-                  icon={!user?.photo ? <UserOutlined /> : null}
-                  className="!my-4"
-                />
+                <div className="relative w-[200px] h-[200px] !my-4">
+                  {/* Lingkaran Avatar */}
+                  <div className="flex justify-center items-center w-full h-full rounded-full overflow-hidden border-2 border-gray-300 p-1">
+                    <div className="flex justify-center items-center w-full h-full rounded-full overflow-hidden">
+                      {user?.photo ? (
+                        <Image
+                          src={user.photo}
+                          width={190}
+                          height={190}
+                          className="object-cover rounded-full"
+                          alt="User Picture"
+                        />
+                      ) : (
+                        <Avatar
+                          size={190}
+                          icon={<UserOutlined />}
+                          className="w-full h-full"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Tombol Edit - Tepat di pojok kanan bawah */}
+                  <button
+                    disabled
+                    onClick={() => console.log("Edit Clicked")}
+                    className="absolute bottom-5 right-5 translate-x-1/4 translate-y-1/4
+                    w-10 h-10 rounded-full cursor-not-allowed
+                    flex items-center justify-center border-2 border-gray-300
+                    bg-gray-200 text-gray-400
+                    transition"
+                  >
+                    <EditOutlined />
+                  </button>
+                </div>
                 <div className="text-lg font-semibold">
                   {user?.name || "Guest"}
                 </div>
