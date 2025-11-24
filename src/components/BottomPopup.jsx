@@ -3,7 +3,13 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { CloseOutlined } from "@ant-design/icons";
 
-export default function BottomPopup({ open, onClose, children, title }) {
+export default function BottomPopup({
+  open,
+  onClose,
+  children,
+  title,
+  dragDistance = true,
+}) {
   const controls = useAnimation();
   const [startY, setStartY] = useState(0);
 
@@ -58,7 +64,6 @@ export default function BottomPopup({ open, onClose, children, title }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
           />
 
           {/* Popup container */}
@@ -68,17 +73,24 @@ export default function BottomPopup({ open, onClose, children, title }) {
             initial={{ y: "100%" }}
             animate={controls}
             exit={{ y: "110%" }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 1 }}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
+            // Aktifkan drag hanya jika dragDistance = true
+            drag={dragDistance ? "y" : false}
+            dragConstraints={dragDistance ? { top: 0, bottom: 0 } : undefined}
+            dragElastic={dragDistance ? { top: 0, bottom: 1 } : undefined}
+            onDragStart={dragDistance ? handleDragStart : undefined}
+            onDragEnd={dragDistance ? handleDragEnd : undefined}
           >
-            <div className="flex justify-center mt-3">
-              <div className="w-12 h-1.5 bg-neutral-300 rounded-full" />
-            </div>
+            {dragDistance && (
+              <div className="flex justify-center mt-2">
+                <div className="w-12 h-1.5 bg-neutral-300 rounded-full" />
+              </div>
+            )}
 
-            <div className="flex justify-between items-center px-8 py-2">
+            <div
+              className={`flex justify-between items-center px-8 py-2 ${
+                !dragDistance ? "mt-3" : ""
+              }`}
+            >
               <h3 className="text-lg font-semibold">{title || ""}</h3>
               <button
                 className="flex justify-center items-center aspect-square w-8 h-auto active:bg-neutral-200 rounded-full cursor-pointer"

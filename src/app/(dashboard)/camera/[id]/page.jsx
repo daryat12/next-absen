@@ -239,12 +239,12 @@ export default function CheckDetail() {
 
   // Dapatkan lokasi GPS
   const detectLocation = (mode = "once") => {
-    // setCoords({
-    //   lat: -6.1234567,
-    //   lng: 106.1234567,
-    //   accuracy: 10.12,
-    // });
-    // return;
+    setCoords({
+      lat: -6.1234567,
+      lng: 106.1234567,
+      accuracy: 10.12,
+    });
+    return;
 
     if (!navigator.geolocation) {
       setLocError("Geolocation tidak tersedia di browser ini.");
@@ -288,9 +288,10 @@ export default function CheckDetail() {
 
   // Dapatkan alamat dari titik lokasi
   const getAddressFromCoords = async (lat, lon) => {
-    // return setAddress(
-    //   "Jl. Test, Kelurahan, Kecamatan, Provinsi, Kodepos, Negara"
-    // );
+    return setAddress(
+      "Jl. Test, Kelurahan, Kecamatan, Provinsi, Kodepos, Negara"
+    );
+
     try {
       const res = await fetch(`/api/reverse?lat=${lat}&lon=${lon}`);
       const json = await res.json();
@@ -702,6 +703,7 @@ export default function CheckDetail() {
             setIsDetailVisible(false);
           }}
           title="Set Lokasi Mesin"
+          dragDistance={false}
         >
           <Form
             layout="vertical"
