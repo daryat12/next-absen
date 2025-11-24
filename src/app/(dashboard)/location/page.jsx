@@ -78,7 +78,7 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
   };
 
   return (
-    <div className="fixed md:absolute top-18 w-[80%] z-50">
+    <div className="fixed md:absolute top-18 w-[90%] z-50">
       <form
         onSubmit={handleSearch}
         className="flex h-12 bg-white shadow rounded-lg overflow-hidden items-center"
@@ -279,24 +279,26 @@ export default function LocationPage() {
         searchMarker={searchMarker}
       />
 
-      <div className="fixed md:absolute bottom-6 right-4 z-50 flex flex-col gap-1 justify-end items-end text-blue-500">
-        <div className="flex flex-col gap-1 justify-end items-center">
-          <button
-            onClick={() => router.push("/camera/set")}
-            className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
-            title="Pin lokasi baru"
-          >
-            <AddIcon />
-          </button>
-          <button
-            onClick={handleLocateMe}
-            className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
-            title="Lokasi saya"
-          >
-            <MyLocationIcon />
-          </button>
+      {coords && (
+        <div className="fixed md:absolute bottom-6 right-4 z-50 flex flex-col gap-1 justify-end items-end text-blue-500">
+          <div className="flex flex-col gap-1 justify-end items-center">
+            <button
+              onClick={() => router.push("/camera/set")}
+              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
+              title="Pin lokasi baru"
+            >
+              <AddIcon />
+            </button>
+            <button
+              onClick={handleLocateMe}
+              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
+              title="Lokasi saya"
+            >
+              <MyLocationIcon />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

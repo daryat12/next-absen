@@ -21,8 +21,19 @@ function Drawer() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const userEmailList = JSON.parse(localStorage.getItem("userEmail")) || [];
+
+    if (storedUser) {
+      const match = userEmailList.find(
+        (item) => item.email === storedUser.username
+      );
+
+      setUser({
+        ...storedUser,
+        photo: match?.photo || null,
+      });
+    }
   }, []);
 
   const router = useRouter();
@@ -60,7 +71,12 @@ function Drawer() {
               </div>
               <Divider className="!my-4" />
               <div className="flex flex-col items-center w-full px-4">
-                <Avatar size={150} icon={<UserOutlined />} className="!my-4" />
+                <Avatar
+                  size={150}
+                  src={user?.photo}
+                  icon={!user?.photo ? <UserOutlined /> : null}
+                  className="!my-4"
+                />
                 <div className="text-lg font-semibold">
                   {user?.name || "Guest"}
                 </div>
@@ -89,11 +105,16 @@ function Drawer() {
               </div>
             </div>
 
-            <div
-              onClick={handleLogout}
-              className="w-full py-2 bg-red-200 hover:bg-red-300 text-red-500 text-center font-semibold rounded-lg cursor-pointer transition-all duration-300 active:scale-[0.98]"
-            >
-              Keluar
+            <div>
+              <div className="mb-4 text-center text-xs">
+                <span>version {process.env.NEXT_PUBLIC_VERSION}</span>
+              </div>
+              <div
+                onClick={handleLogout}
+                className="w-full py-2 bg-red-200 hover:bg-red-300 text-red-500 text-center font-semibold rounded-lg cursor-pointer transition-all duration-300 active:scale-[0.98]"
+              >
+                Keluar
+              </div>
             </div>
           </motion.div>
         </>
@@ -147,7 +168,7 @@ function FooterMenu({ isHiddenFooter = true }) {
     { name: "Beranda", icon: <HomeRoundedIcon />, link: "/main" },
     {
       name: "Absen Live",
-      icon: <FingerprintRoundedIcon fontSize="large" />,
+      icon: <FingerprintRoundedIcon className="!text-[47px]" />,
       link: "/attendance",
     },
     { name: "Histori", icon: <HistoryRoundedIcon />, link: "/history" },
@@ -193,11 +214,13 @@ function FooterMenu({ isHiddenFooter = true }) {
                             : "bg-[#12549a] hover:bg-blue-600"
                         }`}
                       >
-                        {menu.icon}
+                        <div className={`${!isActive ? "animate-pulse" : ""}`}>
+                          {menu.icon}
+                        </div>
                       </div>
                       <span
                         className={`font-medium relative top-1 ${
-                          isActive ? "text-neutral-600" : ""
+                          isActive ? "text-blue-600" : ""
                         }`}
                       >
                         {menu.name}
@@ -207,20 +230,23 @@ function FooterMenu({ isHiddenFooter = true }) {
                     <div
                       className={`h-full w-30 flex flex-col items-center ${
                         isActive
-                          ? "bg-gradient-to-b from-blue-600/50 to-transparent border-t-3 border-blue-600 pt-[3px]"
+                          ? "bg-gradient-to-b from-[#12549a]/20 to-transparent"
                           : "pt-[6px]"
                       }`}
                     >
+                      {isActive && (
+                        <div className="w-full h-1 bg-blue-600 rounded-b-full mb-[2px]" />
+                      )}
                       <div
                         className={`text-xl mb-1 cursor-pointer ${
-                          isActive ? "text-[#12549a]" : ""
+                          isActive ? "text-blue-600" : ""
                         }`}
                       >
                         {menu.icon}
                       </div>
                       <span
                         className={`font-medium ${
-                          isActive ? "text-neutral-600" : ""
+                          isActive ? "text-blue-600" : ""
                         }`}
                       >
                         {menu.name}

@@ -6,7 +6,11 @@ import { Divider, Empty, Modal } from "antd";
 import { LoginOutlined, LogoutOutlined } from "@ant-design/icons";
 
 function Timer() {
-  const [time, setTime] = useState({ hours: "", minutes: "", seconds: "" });
+  const [time, setTime] = useState({
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+  });
 
   useEffect(() => {
     const updateTimer = () => {

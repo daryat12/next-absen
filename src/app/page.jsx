@@ -70,6 +70,29 @@ export default function LoginPage() {
     }
   };
 
+  const userEmail = (googleUser) => {
+    // Ambil daftar userEmail yang sudah ada
+    const existingList = JSON.parse(localStorage.getItem("userEmail")) || [];
+
+    // Data baru yang mau dimasukkan
+    const newUserEntry = {
+      email: googleUser.email,
+      photo: googleUser.photoURL,
+    };
+
+    // Cek apakah email sudah ada (agar tidak double)
+    const alreadyExists = existingList.some(
+      (u) => u.email === newUserEntry.email
+    );
+
+    if (!alreadyExists) {
+      existingList.push(newUserEntry);
+    }
+
+    // Simpan kembali ke localStorage
+    localStorage.setItem("userEmail", JSON.stringify(existingList));
+  };
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setAlert({ type: "", message: "", show: false });
@@ -78,14 +101,14 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
 
       // Ambil user info dari Firebase
-      const firebaseUser = result.user;
+      const googleUser = result.user;
 
       // Bisa kirim ke API kamu kalau butuh sinkronisasi backend
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: firebaseUser.email,
+          email: googleUser.email,
           Password: null,
           loginWith: "google",
         }),
@@ -95,6 +118,7 @@ export default function LoginPage() {
 
       if (data.message === "success") {
         localStorage.setItem("user", JSON.stringify(data.data));
+        userEmail(googleUser);
         setAlert({ type: "success", message: "Login berhasil!", show: true });
         setTimeout(() => router.push("/main"), 1000);
       } else {
@@ -188,7 +212,7 @@ export default function LoginPage() {
             Masuk untuk mengakses dashboard dan fitur lainnya.
           </p>
           <Divider className="!border-white/20" />
-          <p className="text-sm">version 2.0.0</p>
+          <p className="text-sm">version {process.env.NEXT_PUBLIC_VERSION}</p>
           <div className="flex justify-center mt-1">
             <button
               onClick={() => setLogVisible(true)}
@@ -278,7 +302,7 @@ export default function LoginPage() {
 
           {/* Tombol Lihat Log */}
           <div className="md:hidden flex justify-between items-center mt-4 text-black/30">
-            <span>version 2.0.0</span>
+            <span>version {process.env.NEXT_PUBLIC_VERSION}</span>
             <button
               onClick={() => setLogVisible(true)}
               className="flex items-center gap-1 text-gray-600 hover:text-[#12549A] text-xs cursor-help"

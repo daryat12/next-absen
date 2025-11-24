@@ -158,6 +158,10 @@ export default function ApprovalPage() {
     type: "info",
     message: "",
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDescription, setModalDescription] = useState("");
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const showAlert = (type, message, duration = 5000) => {
     setAlertConfig({ show: true, type, message });
@@ -433,14 +437,31 @@ export default function ApprovalPage() {
     }
   };
 
-  const handleRemove = (id) => {
-    handleDelete(id);
+  const handleRemove = (record) => {
+    if (!record) return;
+    setSelectedDeleteId(record.id); // simpan id yang ingin dihapus
+    setModalTitle(
+      `Hapus data, ${record.name} pada tanggal ${dayjs(record.date).format(
+        "DD/MM/YYYY"
+      )}`
+    );
+    setModalDescription("Jika tetap ingin menghapus, silakan lanjutkan?");
+    setIsModalOpen(true);
+  };
 
-    if (!isLoading) {
-      setUserAttendance((prev) => prev.filter((item) => item.id !== id));
+  const handleConfirm = () => {
+    if (selectedDeleteId) {
+      handleDelete(selectedDeleteId); // hapus data setelah konfirmasi
+
+      setUserAttendance((prev) =>
+        prev.filter((item) => item.id !== selectedDeleteId)
+      );
 
       setIsDetailVisible(false);
+      setSelectedDeleteId(null);
     }
+
+    setIsModalOpen(false);
   };
 
   const filteredData = data.filter((item) => {
@@ -623,7 +644,7 @@ export default function ApprovalPage() {
 
                     {isSuperAdmin && (
                       <button
-                        onClick={() => handleRemove(selectedRecord.id)}
+                        onClick={() => handleRemove(selectedRecord)}
                         className="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md cursor-pointer"
                       >
                         Hapus
@@ -703,6 +724,34 @@ export default function ApprovalPage() {
           </div>
         )}
       </div>
+
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Peringatan!</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          <strong className="text-red-500 text-[13.2pt]">{modalTitle}</strong>
+          <br />
+          {modalDescription}
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Tidak
+          </button>
+          <button
+            className="w-30 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 cursor-pointer"
+            onClick={handleConfirm}
+          >
+            Lanjut
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

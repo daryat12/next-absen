@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
-import { Avatar, Badge, Alert } from "antd";
+import { Avatar, Badge, Dropdown, Empty } from "antd";
 import { useProfile } from "@/context/ProfileContext";
 import {
   UserOutlined,
@@ -21,14 +22,70 @@ import { NewspaperOutlined as NewsIcon } from "@mui/icons-material";
 
 function Header({ user }) {
   const { setShowProfile } = useProfile();
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertKey, setAlertKey] = useState(0);
+  const [notif, setNotif] = useState([]);
 
-  const handleClick = () => {
-    setShowAlert(true);
-    setAlertKey((prev) => prev + 1);
-    setTimeout(() => setShowAlert(false), 5000);
+  const fetchNotif = async (parsedUser) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/getNotif`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
+          },
+          body: JSON.stringify({
+            group: parsedUser.group_name?.includes("Super Admin") || "",
+            cabang: parsedUser.alias || "",
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (result.status) {
+        setNotif(result.data || []);
+      } else {
+        setNotif([]);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
   };
+
+  useEffect(() => {
+    if (user) fetchNotif(user);
+  }, [user]);
+
+  const notifs = Array.isArray(notif) && notif.length > 0;
+
+  const items = notifs
+    ? notif.map((row, index) => ({
+        key: String(index + 1),
+        label: (
+          <Link
+            href={row.link || "#"}
+            className="block font-semibold flex justify-between gap-1 items-center px-2 py-1 hover:bg-neutral-100 rounded-md"
+          >
+            <span>
+              {row.notif} ({row.jumlah} {row.satuan})
+            </span>
+          </Link>
+        ),
+      }))
+    : [
+        {
+          key: "empty",
+          disabled: true,
+          label: (
+            <div className="py-3 flex justify-center">
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Tidak ada notifikasi"
+              />
+            </div>
+          ),
+        },
+      ];
 
   return (
     <div className="flex justify-between mb-10 px-2">
@@ -37,9 +94,12 @@ function Header({ user }) {
         onClick={() => setShowProfile(true)}
       >
         <Avatar
-          className="!bg-white"
           size={46}
-          icon={<UserOutlined className="!text-neutral-500" />}
+          src={user?.photo}
+          icon={
+            !user?.photo ? <UserOutlined className="!text-neutral-500" /> : null
+          }
+          className={!user?.photo ? "!bg-white" : ""}
         />
         <div>
           <div className="text-[11pt] font-semibold text-white">
@@ -51,28 +111,16 @@ function Header({ user }) {
         </div>
       </div>
 
-      <Badge dot={true}>
-        <BellFilled
-          className="text-xl !text-white cursor-pointer"
-          onClick={handleClick}
-        />
-      </Badge>
-
-      {/* Alert Notification */}
-      <div
-        className={`fixed left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
-          showAlert ? "top-4 opacity-100 z-50" : "top-0 opacity-0 -z-10"
-        }`}
+      <Dropdown
+        menu={{ items }}
+        placement="bottomRight"
+        trigger={["click"]}
+        popupRender={(menu) => <div style={{ marginTop: "-20px" }}>{menu}</div>}
       >
-        <Alert
-          key={alertKey}
-          message="Maaf fitur ini sedang dalam proses pengerjaan."
-          type="info"
-          showIcon
-          closable
-          className="w-[350px] shadow-md"
-        />
-      </div>
+        <Badge dot={notifs}>
+          <BellFilled className="text-xl !text-white cursor-pointer" />
+        </Badge>
+      </Dropdown>
     </div>
   );
 }
@@ -147,13 +195,20 @@ export default function MainPage() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const userEmailList = JSON.parse(localStorage.getItem("userEmail")) || [];
 
-      // Ambil data hanya jika user ada
-      fetchData(parsedUser);
+    if (storedUser) {
+      const match = userEmailList.find(
+        (item) => item.email === storedUser.username
+      );
+
+      setUser({
+        ...storedUser,
+        photo: match?.photo || null,
+      });
+
+      fetchData(storedUser);
     }
   }, []);
 
@@ -269,9 +324,15 @@ export default function MainPage() {
           <Header user={user} />
           <div className="flex justify-center items-center -mb-15">
             <div className="relative w-fit h-fit">
-              <img
+              <Image
                 src={logo}
-                className="w-[250px] h-auto object-contain invert brightness-0 opacity-60"
+                alt="Logo"
+                width={250}
+                height={80}
+                className="w-[250px] h-auto object-contain invert brightness-0 opacity-60 select-none"
+                draggable="false"
+                onContextMenu={(e) => e.preventDefault()} // <-- blok klik kanan
+                priority
               />
 
               <div
