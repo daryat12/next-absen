@@ -27,6 +27,9 @@ function Header({ user }) {
 
   const fetchNotif = async (parsedUser) => {
     try {
+      const possibleGroups = ["Super Admin", "Online Absen Check"];
+      const group =
+        possibleGroups.find((g) => parsedUser.group_name?.includes(g)) || "";
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/getNotif`,
         {
@@ -36,7 +39,7 @@ function Header({ user }) {
             "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
           },
           body: JSON.stringify({
-            group: parsedUser.group_name?.includes("Super Admin") || "",
+            group,
             cabang: parsedUser.alias || "",
           }),
         }
