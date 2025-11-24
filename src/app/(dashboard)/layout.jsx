@@ -111,7 +111,7 @@ function Drawer() {
               </div>
               <div
                 onClick={handleLogout}
-                className="w-full py-2 bg-red-200 hover:bg-red-300 text-red-500 text-center font-semibold rounded-lg cursor-pointer transition-all duration-300 active:scale-[0.98]"
+                className="w-full py-2 bg-red-200 hover:bg-red-300 text-red-500 text-center font-semibold rounded-lg cursor-pointer transition-all duration-300 active:scale-[0.98] select-none"
               >
                 Keluar
               </div>
