@@ -60,9 +60,9 @@ function Header({ user }) {
     if (user) fetchNotif(user);
   }, [user]);
 
-  const notifs = Array.isArray(notif) && notif.length > 0;
+  const hasNotifs = Array.isArray(notif) && notif.length > 0;
 
-  const items = notifs
+  const items = hasNotifs
     ? notif.map((row, index) => ({
         key: String(index + 1),
         label: (
@@ -92,12 +92,12 @@ function Header({ user }) {
       ];
 
   useEffect(() => {
-    if (notifs) {
+    if (notif.length > 0) {
       setDropdownVisible(true); // buka dropdown saat load
       const timer = setTimeout(() => setDropdownVisible(false), 10000); // tutup 10 detik
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [notif]);
 
   return (
     <div className="flex justify-between mb-10 px-2">
@@ -131,7 +131,7 @@ function Header({ user }) {
         onOpenChange={(open) => setDropdownVisible(open)}
         popupRender={(menu) => <div style={{ marginTop: "-20px" }}>{menu}</div>}
       >
-        <Badge dot={notifs}>
+        <Badge dot={hasNotifs}>
           <BellFilled className="text-xl !text-white cursor-pointer" />
         </Badge>
       </Dropdown>
