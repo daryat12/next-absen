@@ -92,9 +92,11 @@ function Header({ user }) {
       ];
 
   useEffect(() => {
-    setDropdownVisible(true); // buka dropdown saat load
-    const timer = setTimeout(() => setDropdownVisible(false), 10000); // tutup 10 detik
-    return () => clearTimeout(timer);
+    if (notifs) {
+      setDropdownVisible(true); // buka dropdown saat load
+      const timer = setTimeout(() => setDropdownVisible(false), 10000); // tutup 10 detik
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
