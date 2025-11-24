@@ -23,6 +23,7 @@ import { NewspaperOutlined as NewsIcon } from "@mui/icons-material";
 function Header({ user }) {
   const { setShowProfile } = useProfile();
   const [notif, setNotif] = useState([]);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const fetchNotif = async (parsedUser) => {
     try {
@@ -64,7 +65,7 @@ function Header({ user }) {
         label: (
           <Link
             href={row.link || "#"}
-            className="block font-semibold flex justify-between gap-1 items-center px-2 py-1 hover:bg-neutral-100 rounded-md"
+            className="block font-semibold flex justify-between gap-1 items-center px-2 hover:bg-neutral-100 rounded-md"
           >
             <span>
               {row.notif} ({row.jumlah} {row.satuan})
@@ -86,6 +87,12 @@ function Header({ user }) {
           ),
         },
       ];
+
+  useEffect(() => {
+    setDropdownVisible(true); // buka dropdown saat load
+    const timer = setTimeout(() => setDropdownVisible(false), 10000); // tutup 10 detik
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="flex justify-between mb-10 px-2">
@@ -115,6 +122,8 @@ function Header({ user }) {
         menu={{ items }}
         placement="bottomRight"
         trigger={["click"]}
+        open={dropdownVisible}
+        onOpenChange={(open) => setDropdownVisible(open)}
         popupRender={(menu) => <div style={{ marginTop: "-20px" }}>{menu}</div>}
       >
         <Badge dot={notifs}>
