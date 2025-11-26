@@ -77,18 +77,29 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
     }
   };
 
+  useEffect(() => {
+    if (query.trim() === "") {
+      setResults([]);
+      onResultsChange?.([]);
+    }
+  }, [query]);
+
   return (
     <div className="fixed md:absolute top-18 w-[90%] z-50">
       <form
         onSubmit={handleSearch}
-        className="flex h-12 bg-white shadow rounded-lg overflow-hidden items-center"
+        className={`flex h-12 bg-white shadow overflow-hidden items-center ${
+          query && results.length > 0
+            ? "rounded-b-none rounded-t-2xl"
+            : "rounded-full"
+        }`}
       >
         <input
           type="text"
           placeholder="Cari lokasi..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-grow pl-4 pr-2 py-2 outline-none text-sm"
+          className="flex-grow pl-5 pr-3 py-2 outline-none text-sm"
         />
 
         <button
@@ -115,8 +126,8 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
         )}
       </form>
 
-      {results.length > 0 && (
-        <ul className="absolute w-full bg-white border border-neutral-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg text-left text-sm">
+      {query && results.length > 0 && (
+        <ul className="absolute w-full bg-white pb-3 border-t border-gray-200 rounded-b-2xl max-h-60 overflow-y-auto shadow text-left text-sm">
           {results.map((item, idx) => (
             <li
               key={idx}
@@ -280,18 +291,18 @@ export default function LocationPage() {
       />
 
       {coords && (
-        <div className="fixed md:absolute bottom-6 right-4 z-50 flex flex-col gap-1 justify-end items-end text-blue-500">
-          <div className="flex flex-col gap-1 justify-end items-center">
+        <div className="fixed md:absolute bottom-6 right-4 z-50 flex flex-col gap-2 justify-end items-end text-blue-500">
+          <div className="flex flex-col gap-2 justify-end items-center">
             <button
               onClick={() => router.push("/camera/set")}
-              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
+              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-full shadow-md hover:border"
               title="Pin lokasi baru"
             >
               <AddIcon />
             </button>
             <button
               onClick={handleLocateMe}
-              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-11 h-auto rounded-lg shadow"
+              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-full shadow-md hover:border"
               title="Lokasi saya"
             >
               <MyLocationIcon />

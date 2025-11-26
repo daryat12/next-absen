@@ -239,12 +239,12 @@ export default function CheckDetail() {
 
   // Dapatkan lokasi GPS
   const detectLocation = (mode = "once") => {
-    // setCoords({
-    //   lat: -6.1234567,
-    //   lng: 106.1234567,
-    //   accuracy: 10.12,
-    // });
-    // return;
+    setCoords({
+      lat: -6.1234567,
+      lng: 106.1234567,
+      accuracy: 10.12,
+    });
+    return;
 
     if (!navigator.geolocation) {
       setLocError("Geolocation tidak tersedia di browser ini.");
@@ -288,9 +288,9 @@ export default function CheckDetail() {
 
   // Dapatkan alamat dari titik lokasi
   const getAddressFromCoords = async (lat, lon) => {
-    // return setAddress(
-    //   "Jl. Test, Kelurahan, Kecamatan, Provinsi, Kodepos, Negara"
-    // );
+    return setAddress(
+      "Jl. Test, Kelurahan, Kecamatan, Provinsi, Kodepos, Negara"
+    );
 
     try {
       const res = await fetch(`/api/reverse?lat=${lat}&lon=${lon}`);
@@ -632,25 +632,25 @@ export default function CheckDetail() {
           </div>
         </div>
 
-        <div className="absolute grid grid-cols-3 gap-4 place-items-center items-end bottom-8 w-full text-xl text-white z-20">
+        <div className="absolute grid grid-cols-3 gap-4 place-items-center items-end bottom-5 w-full text-xl text-white z-20">
           <button
             onClick={() => {
               stopCamera();
               router.back();
             }}
-            className="flex items-center justify-center aspect-square w-12 cursor-pointer rounded-full bg-white/10 hover:bg-white/20 border border-white/20"
+            className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
           >
             <CloseOutlined />
           </button>
           <button
             onClick={takePhoto}
-            className="relative top-4 w-20 h-20 flex items-center justify-center rounded-full text-3xl bg-red-600 hover:bg-red-700 active:scale-95 border-[6px] border-white/10 cursor-pointer text-white"
+            className="relative top-2 w-20 h-20 flex items-center justify-center rounded-full text-3xl bg-red-600 hover:bg-red-700 active:scale-95 border-[6px] border-white/10 cursor-pointer text-white"
           >
             <CameraOutlined />
           </button>
           <button
             onClick={flipCamera}
-            className="hidden flex items-center justify-center aspect-square w-12 cursor-pointer rounded-full bg-white/10 hover:bg-white/20 border border-white/20"
+            className="hidden flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
           >
             <SwapOutlined />
           </button>
@@ -678,16 +678,16 @@ export default function CheckDetail() {
               className="absolute top-0 left-1/2 -translate-x-1/2 w-auto h-full object-cover aspect-[9/16]"
             />
             {!isLoading && !alertConfig.show && !isDetailVisible && (
-              <div className="absolute bottom-8 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
+              <div className="absolute bottom-5 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
                 <button
                   onClick={reTakePhoto}
-                  className="flex items-center justify-center aspect-square w-12 cursor-pointer rounded-full bg-white/10 hover:bg-white/20 border border-white/20"
+                  className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
                 >
                   <ReloadOutlined />
                 </button>
                 <button
                   onClick={savePhoto}
-                  className="flex items-center justify-center aspect-square w-12 cursor-pointer rounded-full bg-green-500/30 hover:bg-green-500/40 border border-green-500/40 text-green-500"
+                  className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-green-500/30 hover:bg-green-500/50 border-2 border-green-500 text-green-500"
                 >
                   <CheckOutlined />
                 </button>

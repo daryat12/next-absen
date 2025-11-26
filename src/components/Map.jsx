@@ -99,7 +99,7 @@ function UserLocationMarker({ currentUserLocation: user }) {
       {/* Lingkaran radius akurasi */}
       <Circle
         center={[user.lat, user.lng]}
-        radius={10}
+        radius={user.accuracy}
         color="#3b82f6"
         fillColor="#60a5fa"
         fillOpacity={0.2}
