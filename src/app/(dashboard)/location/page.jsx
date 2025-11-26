@@ -127,7 +127,7 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
       </form>
 
       {query && results.length > 0 && (
-        <ul className="absolute w-full bg-white pb-3 border-t border-gray-200 rounded-b-2xl max-h-60 overflow-y-auto shadow text-left text-sm">
+        <ul className="absolute w-full bg-white pb-3 border-t border-gray-200 rounded-b-2xl max-h-96 overflow-y-auto shadow text-left text-sm">
           {results.map((item, idx) => (
             <li
               key={idx}
