@@ -24,6 +24,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import ReactDOMServer from "react-dom/server";
 import { Divider } from "antd";
 import DirectionsIcon from "@mui/icons-material/Directions";
+import ImageIcon from "@mui/icons-material/Image";
 
 // Cluster icon
 function ClusterIcon({ count }) {
@@ -140,8 +141,19 @@ const Map = forwardRef(
     ref
   ) => {
     const mapRef = useRef();
+    const [showImage, setShowImage] = useState(false);
     const [currentUserLocation, setCurrentUserLocation] =
       useState(userLocation);
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/pin_lokasi`;
+
+    const extractSN = (text) => {
+      if (!text) return null;
+      const match = text.match(/\(SN:\s*([A-Z0-9]+)\)/);
+      return match ? match[1] : null;
+    };
+
+    const sn = extractSN(searchMarker?.name); // hasil: "DFW14146"
+    const imageName = `${sn}.png`;
 
     useImperativeHandle(ref, () => ({
       flyTo: (coords, zoom = 18) => {
@@ -228,24 +240,62 @@ const Map = forwardRef(
                 <div>
                   <div className="mb-4">{searchMarker.name}</div>
                   <Divider className="!mt-0 !mb-2" />
-                  <div className="w-1/3">
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${searchMarker.lat},${searchMarker.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 !text-white"
-                    >
-                      <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
-                        <DirectionsIcon fontSize="small" />
+                  <div className="flex gap-4 items-center">
+                    <div className="w-1/3">
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${searchMarker.lat},${searchMarker.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 !text-white"
+                      >
+                        <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
+                          <DirectionsIcon fontSize="small" />
+                        </div>
+                        <span className="text-blue-500">Lihat Rute</span>
+                      </a>
+                    </div>
+                    {sn && (
+                      <div
+                        className="flex items-center gap-2 text-white cursor-pointer"
+                        onClick={() => setShowImage(!showImage)}
+                      >
+                        <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
+                          <ImageIcon fontSize="small" />
+                        </div>
+                        <span className="text-blue-500">Lihat Gambar</span>
                       </div>
-                      <span className="text-blue-500">Lihat Rute</span>
-                    </a>
+                    )}
                   </div>
                 </div>
               </Popup>
             </Marker>
           )}
         </MapContainer>
+        {showImage && (
+          <div
+            className="absolute top-14 left-0 z-[1000] 
+                     bg-white w-full h-[calc(100vh-56px)] flex flex-col"
+          >
+            {/* Bagian gambar */}
+            <div className="flex-1 bg-white overflow-hidden">
+              <img
+                src={`${baseUrl}/${imageName}`}
+                alt="Preview"
+                className="object-cover w-full h-full object-center"
+              />
+            </div>
+
+            {/* Tombol */}
+            <div className="p-3 bg-white">
+              <button
+                className="bg-gray-400 hover:bg-gray-500 text-sm text-white rounded-md w-full h-9 cursor-pointer"
+                onClick={() => setShowImage(false)}
+              >
+                Tutup Gambar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
