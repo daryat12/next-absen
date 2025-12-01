@@ -441,6 +441,8 @@ export default function CheckDetail() {
   };
 
   const savePinLokasi = async (values) => {
+    const cleanedSerial = values.serial.replace(/\s+/g, "").toUpperCase();
+
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -452,11 +454,12 @@ export default function CheckDetail() {
 
       const newValues = {
         ...values,
+        serial: cleanedSerial,
         username: parsedUser.username,
         name: parsedUser.name,
         cabang: parsedUser.alias,
         fileImage: photo, //data:image/png;base64,iVBORw0KGgo...
-        fileName: `${values.serial.toUpperCase()}.png`,
+        fileName: `${cleanedSerial}.png`,
       };
 
       fetchLocation(newValues);
@@ -722,6 +725,12 @@ export default function CheckDetail() {
               <Input
                 placeholder="Masukkan nomor serial mesin"
                 className="!py-2"
+                onChange={(e) => {
+                  const value = e.target.value
+                    .replace(/\s+/g, "")
+                    .toUpperCase();
+                  e.target.value = value;
+                }}
               />
             </Form.Item>
 
