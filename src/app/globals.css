@@ -43,4 +43,10 @@ html {
   }
 }
 
+.spin-white .ant-spin-dot-item {
+  background-color: white !important;
+}
+.spin-white .ant-spin-dot-progress {
+  color: white !important;
+}
 

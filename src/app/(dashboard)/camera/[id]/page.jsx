@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Form, Input, Alert } from "antd";
+import { Form, Input, Alert, Spin } from "antd";
 import { snapdom } from "@zumer/snapdom";
 import {
   CameraOutlined,
@@ -12,7 +12,6 @@ import {
   CheckOutlined,
   SwapOutlined,
   CloseOutlined,
-  LoadingOutlined,
 } from "@ant-design/icons";
 import BottomPopup from "@/components/BottomPopup";
 
@@ -55,6 +54,7 @@ export default function CheckDetail() {
     type: "info",
     message: "",
   });
+  const [percent, setPercent] = useState(-50);
 
   const showAlert = (type, message, duration = 5000) => {
     setAlertConfig({ show: true, type, message });
@@ -533,6 +533,17 @@ export default function CheckDetail() {
     }
   }, [coords]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPercent((v) => {
+        const next = v + 5;
+        return next > 150 ? -50 : next;
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [percent]);
+
   return (
     <div className="relative flex justify-center w-full h-full bg-black overflow-hidden">
       <div className="relative w-full h-full sm:aspect-[9/16] sm:w-auto overflow-hidden">
@@ -543,10 +554,10 @@ export default function CheckDetail() {
         )}
         {isLoading && (
           <div className="bg-black/50 absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
-            <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
-              <LoadingOutlined />
+            <div className="flex flex-col gap-2 justify-center items-center">
+              <Spin percent={percent} className="spin-white" />
+              <span>Sedang memproses data...</span>
             </div>
-            <span>Sedang memproses data...</span>
           </div>
         )}
         <div

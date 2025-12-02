@@ -2,13 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Form, Input, Divider, Typography, Drawer, List, Alert } from "antd";
+import {
+  Form,
+  Input,
+  Divider,
+  Typography,
+  Drawer,
+  List,
+  Alert,
+  Spin,
+} from "antd";
 import {
   MailOutline as MailIcon,
   LockOutlined as LockIcon,
   Help as HistoryIcon,
 } from "@mui/icons-material";
-import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
+import { CloseOutlined } from "@ant-design/icons";
 
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "@/config/firebase";
@@ -19,6 +28,7 @@ export default function LoginPage() {
   const [logVisible, setLogVisible] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "", show: false });
   const [authorized, setAuthorized] = useState(false);
+  const [percent, setPercent] = useState(-50);
 
   const router = useRouter();
 
@@ -187,13 +197,24 @@ export default function LoginPage() {
     },
   ];
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPercent((v) => {
+        const next = v + 5;
+        return next > 150 ? -50 : next;
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [percent]);
+
   if (!authorized)
     return (
-      <div className="flex flex-col gap-4 w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
-        <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
-          <LoadingOutlined />
+      <div className="flex w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
+        <div className="flex flex-col gap-2 justify-center items-center">
+          <Spin percent={percent} />
+          <span>loading...</span>
         </div>
-        <span>Loading...</span>
       </div>
     );
 

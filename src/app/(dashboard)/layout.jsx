@@ -4,13 +4,8 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  CloseOutlined,
-  UserOutlined,
-  LoadingOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
-import { Divider, Avatar, Image } from "antd";
+import { CloseOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
+import { Divider, Avatar, Image, Spin } from "antd";
 import { ProfileProvider, useProfile } from "@/context/ProfileContext"; // ✅ Import useProfile juga
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import FingerprintRoundedIcon from "@mui/icons-material/FingerprintRounded";
@@ -20,7 +15,6 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 function Drawer() {
   const { showProfile, setShowProfile } = useProfile(); // ✅ ambil dari context
   const [user, setUser] = useState(null);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -321,6 +315,7 @@ function LayoutContent({ children }) {
 export default function MainLayout({ children }) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
+  const [percent, setPercent] = useState(-50);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -332,13 +327,24 @@ export default function MainLayout({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPercent((v) => {
+        const next = v + 5;
+        return next > 150 ? -50 : next;
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [percent]);
+
   if (!authorized)
     return (
-      <div className="flex flex-col gap-4 w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
-        <div className="flex justify-center items-center text-3xl border-2 rounded-full aspect-square w-10 h-auto">
-          <LoadingOutlined />
+      <div className="flex w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
+        <div className="flex flex-col gap-2 justify-center items-center">
+          <Spin percent={percent} />
+          <span>loading...</span>
         </div>
-        <span>Loading...</span>
       </div>
     );
 
