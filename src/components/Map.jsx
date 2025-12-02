@@ -102,9 +102,6 @@ function createUserIcon(photo) {
   </svg>
   `;
 
-  const size = 56;
-  const sizeSm = size - 4;
-
   const imageHtml = photo
     ? `<img src="${photo}" class="w-full h-full rounded-full object-cover" />`
     : `${userOutlinedSVG}`;
@@ -113,8 +110,8 @@ function createUserIcon(photo) {
     html: `
       <div class="flex flex-col items-center">
       
-        <div class="w-[${size}px] h-[${size}px] rounded-full overflow-hidden flex justify-center items-center border-2 border-blue-300 shadow bg-gray-400 text-4xl text-white">
-          <div class="w-[${sizeSm}px] h-[${sizeSm}px] rounded-full overflow-hidden flex justify-center items-center border-3 border-white bg-gray-300/50 text-2xl text-white">
+        <div class="w-[56px] h-[56px] rounded-full overflow-hidden flex justify-center items-center border-2 border-blue-300 shadow bg-gray-400 text-4xl text-white">
+          <div class="w-[52px] h-[52px] rounded-full overflow-hidden flex justify-center items-center border-3 border-white bg-gray-300/50 text-2xl text-white">
             ${imageHtml}
           </div>
         </div>
@@ -126,8 +123,8 @@ function createUserIcon(photo) {
       </div>
     `,
     className: "user-marker",
-    iconSize: [size, size + 6],
-    iconAnchor: [size / 2, size + 6],
+    iconSize: [56, 62],
+    iconAnchor: [28, 62],
   });
 }
 
