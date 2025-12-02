@@ -337,15 +337,15 @@ export default function MainPage() {
         <div className="relative z-10">
           <Header user={user} />
           <div className="flex justify-center items-center -mb-15">
-            <div className="relative w-fit h-fit">
+            <div className="relative w-[250px] h-[110px]">
               <Image
                 src={logo}
                 alt="Logo"
-                width={250}
-                height={80}
-                className="w-[250px] h-auto object-contain invert brightness-0 opacity-60 select-none"
+                fill
+                sizes="250px"
+                className="object-contain invert brightness-0 opacity-60 select-none"
                 draggable="false"
-                onContextMenu={(e) => e.preventDefault()} // <-- blok klik kanan
+                onContextMenu={(e) => e.preventDefault()}
                 priority
               />
 

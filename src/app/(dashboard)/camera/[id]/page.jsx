@@ -71,11 +71,7 @@ export default function CheckDetail() {
     {
       in: "Masuk",
       out: "Pulang",
-      set: (
-        <>
-          Pin<span className="text-transparent">-</span>Lokasi
-        </>
-      ),
+      set: "Lokasi",
     }[id] || null;
 
   const colorMap = {

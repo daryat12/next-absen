@@ -41,16 +41,16 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
           lon: loc.lng,
         }));
 
-      // 🌍 Cari di OpenStreetMap
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query
-        )}`
-      );
-      const apiData = await res.json();
-      const apiResults = apiData
-        .slice(0, 5)
-        .map((item) => ({ ...item, source: "osm" }));
+      // // 🌍 Cari di OpenStreetMap
+      // const res = await fetch(
+      //   `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      //     query
+      //   )}`
+      // );
+      // const apiData = await res.json();
+      // const apiResults = apiData
+      //   .slice(0, 5)
+      //   .map((item) => ({ ...item, source: "osm" }));
 
       let customOption = [];
       if (myCoords) {
@@ -67,7 +67,8 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
       }
 
       // Gabungkan hasilnya (lokal dulu baru OSM)
-      const combinedResults = [...customOption, ...localMatches, ...apiResults];
+      // const combinedResults = [...customOption, ...localMatches, ...apiResults];
+      const combinedResults = [...customOption, ...localMatches];
       setResults(combinedResults);
       onResultsChange?.(combinedResults);
     } catch (err) {
@@ -87,7 +88,7 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
   return (
     <div className="fixed md:absolute top-18 w-[90%] z-50">
       <form
-        onSubmit={handleSearch}
+        onChange={handleSearch}
         className={`flex h-12 bg-white shadow overflow-hidden items-center ${
           query && results.length > 0
             ? "rounded-b-none rounded-t-2xl"
@@ -185,7 +186,7 @@ export default function LocationPage() {
     }
   };
 
-  const DEFAULT_LOCATION = { lat: -6.4029013, lng: 106.7943794 };
+  const DEFAULT_LOCATION = { lat: -7.383268097232734, lng: 121.78690970749423 };
 
   // Fungsi ambil lokasi GPS
   const detectLocation = (mode = "once") => {
@@ -238,7 +239,7 @@ export default function LocationPage() {
   const lng = coords?.lng ?? DEFAULT_LOCATION.lng;
   const center = [lat, lng];
 
-  const locations = pinLocation;
+  const listLocations = pinLocation;
 
   const handleLocateMe = () => {
     if (coords && mapRef.current) {
@@ -251,7 +252,7 @@ export default function LocationPage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen w-full text-center relative">
       <SearchBox
-        locations={locations}
+        locations={listLocations}
         myCoords={coords}
         onSelectLocation={(item) => {
           if (item.display_name.toLowerCase().includes("terdekat")) {
@@ -281,7 +282,7 @@ export default function LocationPage() {
 
       <Map
         ref={mapRef}
-        locations={locations}
+        locations={listLocations}
         locationDisable={true}
         center={center}
         userLocation={coords}
@@ -290,22 +291,40 @@ export default function LocationPage() {
         searchMarker={searchMarker}
       />
 
+      <div
+        className="fixed font-bold md:absolute bottom-4 left-6 z-50 flex flex-col gap-2 justify-end items-end text-black/65 select-none tracking-[0.5px]"
+        style={{
+          textShadow: `
+            2px 2px 0 white,
+            -2px 2px 0 white,
+            2px -2px 0 white,
+            -2px -2px 0 white,
+            0px 2px 0 white,
+            2px 0px 0 white,
+            0px -2px 0 white,
+            -2px 0px 0 white
+          `,
+        }}
+      >
+        RDN Maps
+      </div>
+
       {coords && (
         <div className="fixed md:absolute bottom-6 right-4 z-50 flex flex-col gap-2 justify-end items-end text-blue-500">
-          <div className="flex flex-col gap-2 justify-end items-center">
-            <button
-              onClick={() => router.push("/camera/set")}
-              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-full shadow-md hover:border"
-              title="Pin lokasi baru"
-            >
-              <AddIcon />
-            </button>
+          <div className="flex flex-col gap-4 justify-end items-center">
             <button
               onClick={handleLocateMe}
-              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-full shadow-md hover:border"
+              className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-3xl shadow-md"
               title="Lokasi saya"
             >
-              <MyLocationIcon />
+              <MyLocationIcon className="!w-7 !h-7" />
+            </button>
+            <button
+              onClick={() => router.push("/camera/set")}
+              className="flex justify-center items-center bg-emerald-700 text-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-3xl shadow-md"
+              title="Pin lokasi baru"
+            >
+              <AddIcon className="!w-7 !h-7" />
             </button>
           </div>
         </div>
