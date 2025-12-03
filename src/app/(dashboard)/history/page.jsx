@@ -146,7 +146,7 @@ export default function HistoryPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
-  const limit = 10;
+  const limit = 50;
 
   const listRef = useRef(null);
 

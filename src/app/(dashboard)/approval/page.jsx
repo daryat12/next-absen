@@ -152,7 +152,7 @@ export default function ApprovalPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
-  const limit = 10;
+  const limit = 50;
   const [alertConfig, setAlertConfig] = useState({
     show: false,
     type: "info",

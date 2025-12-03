@@ -89,7 +89,8 @@ function SearchBox({
           if (b.distanceKm === null) return -1;
 
           return a.distanceKm - b.distanceKm; // ASC → terdekat dulu
-        });
+        })
+        .slice(0, 50);
 
       // // 🌍 Cari di OpenStreetMap
       // const res = await fetch(
@@ -216,7 +217,7 @@ function SearchBox({
                     className="hover:bg-gray-100 cursor-pointer w-full"
                   >
                     <div className="flex justify-between items-center">
-                      <div className="flex flex-col justify-center gap-0.5 ml-2 pt-2 w-12 items-center">
+                      <div className="flex flex-col justify-center gap-0.5 ml-2 w-12 items-center">
                         <div className="bg-gray-200 p-1 flex justify-center items-center w-6 h-6 rounded-full">
                           <PlaceOutlinedIcon className="!h-4 !w-4" />
                         </div>
@@ -230,9 +231,11 @@ function SearchBox({
                       </div>
 
                       <div
-                        className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-2 pr-2 
+                        className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-4 pr-2 
                         ${
-                          idx < results.length - 1 && "border-b border-gray-200"
+                          idx < results.length - 1
+                            ? "border-b border-gray-200"
+                            : "mb-10"
                         }`}
                       >
                         <div className="flex flex-col max-w-[97%]">
