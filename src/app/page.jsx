@@ -213,7 +213,7 @@ export default function LoginPage() {
       <div className="flex w-full h-screen items-center justify-center bg-white text-sm text-[#12549a]">
         <div className="flex flex-col gap-2 justify-center items-center">
           <Spin percent={percent} />
-          <span>loading...</span>
+          <span>Loading...</span>
         </div>
       </div>
     );

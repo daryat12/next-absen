@@ -34,6 +34,7 @@ export default function CheckDetail() {
   const streamRef = useRef(null);
   const captureRef = useRef(null);
   const shutterAudioRef = useRef(null);
+  const hasFetchedAddress = useRef(false);
 
   const [error, setError] = useState(null);
   const [cameraReady, setCameraReady] = useState(true);
@@ -528,7 +529,8 @@ export default function CheckDetail() {
   }, []);
 
   useEffect(() => {
-    if (coords?.lat && coords?.lng) {
+    if (coords?.lat && coords?.lng && !hasFetchedAddress.current) {
+      hasFetchedAddress.current = true;
       getAddressFromCoords(coords.lat, coords.lng);
     }
   }, [coords]);
