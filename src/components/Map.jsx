@@ -11,7 +11,6 @@ import {
   MapContainer,
   TileLayer,
   Marker,
-  Circle,
   CircleMarker,
   Popup,
   useMap,
@@ -163,13 +162,37 @@ function UserLocationMarker({ currentUserLocation: user }) {
   );
 }
 
-const searchIcon = L.divIcon({
-  html: `<img src="/map/icon/marker-red.png" />`,
-  className: "bg-transparent", // 🔥 animasi bounce
-  iconSize: [40, 40],
-  iconAnchor: [20, 40], // titik bawah tengah
-  popupAnchor: [0, -40],
-});
+const searchIconWithLabel = (name) =>
+  L.divIcon({
+    className: "custom-search-label",
+    html: `
+      <div class="flex items-center gap-1">
+        <img
+          src="/map/icon/marker-red.png"
+          class="w-10 h-10"
+        />
+        <span
+          class="text-left text-xs font-semibold whitespace-nowrap max-w-[200px] pointer-events-none"
+          style="
+            text-shadow:
+              1px 1px 0 white,
+              -1px 1px 0 white,
+              1px -1px 0 white,
+              -1px -1px 0 white,
+              0px 1px 0 white,
+              1px 0px 0 white,
+              0px -1px 0 white,
+              -1px 0px 0 white;
+          "
+        >
+          ${name}
+        </span>
+      </div>
+    `,
+    iconSize: [0, 0], // biar bounding box native tidak dipakai
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
 
 const Map = forwardRef(
   (
@@ -209,8 +232,6 @@ const Map = forwardRef(
     useEffect(() => {
       setCurrentUserLocation(userLocation);
     }, [userLocation]);
-
-    // console.log(center);
 
     const layerUrl =
       layer === "clean"
@@ -288,7 +309,9 @@ const Map = forwardRef(
           {searchMarker && (
             <Marker
               position={[searchMarker.lat, searchMarker.lng]}
-              icon={searchIcon}
+              icon={searchIconWithLabel(
+                searchMarker.name.split(",")[0]?.toUpperCase().trim()
+              )}
               zIndexOffset={500}
             >
               <Popup>
