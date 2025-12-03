@@ -7,6 +7,8 @@ import { default as AddIcon } from "@mui/icons-material/AddLocationAlt";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import SearchIcon from "@mui/icons-material/Search";
 import MapIcon from "@mui/icons-material/Map";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 import { LoadingOutlined, CloseOutlined } from "@ant-design/icons";
 
 const Map = dynamic(() => import("@/components/Map"), {
@@ -24,22 +26,61 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const getDistanceKm = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+
+    const R = 6371; // radius bumi (km)
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // dalam kilometer
+  };
+
+  const handleSearch = async () => {
     if (!query.trim()) return;
 
     setLoading(true);
     try {
       // 🔍 Cari di lokasi lokal
       const localMatches = locations
-        .filter((loc) => loc.name.toLowerCase().includes(query.toLowerCase()))
+        .filter((loc) => {
+          // 1. Ambil seluruh teks yang akan dicari (nama + alamat)
+          const searchString = loc.name.toLowerCase();
+
+          // 2. Pecah query menjadi kata-kata
+          const queryWords = query
+            .toLowerCase()
+            .split(" ")
+            .filter((word) => word.length > 0);
+
+          return queryWords.every((word) => searchString.includes(word));
+        })
         .map((loc) => ({
+          // ... bagian map dan sort tetap sama ...
           ...loc,
           source: "local",
           display_name: loc.name,
           lat: loc.lat,
           lon: loc.lng,
-        }));
+          distanceKm: myCoords
+            ? getDistanceKm(myCoords.lat, myCoords.lng, loc.lat, loc.lng)
+            : null,
+        }))
+        .sort((a, b) => {
+          // Kalau distance null, taruh di bawah
+          if (a.distanceKm === null) return 1;
+          if (b.distanceKm === null) return -1;
+
+          return a.distanceKm - b.distanceKm; // ASC → terdekat dulu
+        });
 
       // // 🌍 Cari di OpenStreetMap
       // const res = await fetch(
@@ -88,7 +129,10 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
   return (
     <div className="fixed md:absolute top-18 w-[90%] z-50">
       <form
-        onChange={handleSearch}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSearch(); // panggil fungsi search saat submit
+        }}
         className={`flex h-12 bg-white shadow overflow-hidden items-center ${
           query && results.length > 0
             ? "rounded-b-none rounded-t-2xl"
@@ -99,7 +143,10 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
           type="text"
           placeholder="Cari lokasi..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            handleSearch();
+          }}
           className="flex-grow pl-5 pr-3 py-2 outline-none text-sm"
         />
 
@@ -135,12 +182,49 @@ function SearchBox({ onSelectLocation, onResultsChange, locations, myCoords }) {
               onClick={() => {
                 onSelectLocation(item);
                 setResults([]);
-                setQuery(item.display_name.split(",")[0]);
+                setQuery(item.display_name.split(",")[0]?.toUpperCase().trim());
               }}
-              className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+              className="hover:bg-gray-100 cursor-pointer"
             >
-              <span>{item.display_name}</span>
-              <span>{item.source === "local" ? "📍" : ""}</span>
+              <div className="pb-2 flex justify-between items-center">
+                {/* Kiri: Ikon lokasi + jarak */}
+                <div className="flex flex-col justify-center gap-0.5 pt-2 w-full items-center">
+                  <div className="bg-gray-200 p-1 flex justify-center items-center w-6 h-6 rounded-full">
+                    <PlaceOutlinedIcon className="!h-4 !w-4" />
+                  </div>
+                  <span className="text-[9px] text-gray-400">
+                    {item.distanceKm && item.distanceKm <= 101
+                      ? item.distanceKm < 1
+                        ? Math.round(item.distanceKm * 1000) + " m"
+                        : item.distanceKm.toFixed(1) + " km"
+                      : ""}
+                  </span>
+                </div>
+
+                {/* Tengah + Kanan: Dikasih border-t */}
+                <div className="flex items-center justify-between max-w-[85%] ml-2 pt-2">
+                  {/* Bagian teks */}
+                  <div className="flex flex-col max-w-[90%]">
+                    <span className="font-semibold truncate">
+                      {item.display_name.split(",")[0]?.toUpperCase().trim()}
+                    </span>
+
+                    <span className="text-xs text-gray-400 truncate">
+                      {item.display_name
+                        .replace(item.display_name.split(",")[0] + ",", "")
+                        .trim()}
+                    </span>
+                  </div>
+
+                  {/* Icon Arrow */}
+                  <div className="mr-2">
+                    <ArrowOutwardIcon
+                      className="scale-x-[-1]"
+                      fontSize="small"
+                    />
+                  </div>
+                </div>
+              </div>
             </li>
           ))}
         </ul>

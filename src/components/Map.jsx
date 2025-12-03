@@ -65,11 +65,20 @@ function ClusterLayer({ locations }) {
       });
       marker.bindPopup(`
         <div>
-          <div class="mb-4">${loc.name}</div>
+          <div className="mb-4">
+            <h3 className="font-semibold">
+              ${loc.name.split(",")[0]?.toUpperCase().trim()}
+            </h3>
+            <p className="text-xs !mt-1">
+              ${loc.name.replace(loc.name.split(",")[0] + ",", "").trim()}
+            </p>
+          </div>
           <hr class="mt-0 mb-2 !text-gray-200" />
           <div class="w-1/3">
             <a
-              href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}"
+              href="https://www.google.com/maps/dir/?api=1&destination=${
+                loc.lat
+              },${loc.lng}"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-2 !text-white"
@@ -243,7 +252,16 @@ const Map = forwardRef(
                   >
                     <Popup>
                       <div>
-                        <div className="mb-4">{loc.name}</div>
+                        <div className="mb-4">
+                          <h3 className="font-semibold">
+                            {loc.name.split(",")[0]?.toUpperCase().trim()}
+                          </h3>
+                          <p className="text-xs !mt-1">
+                            {loc.name
+                              .replace(loc.name.split(",")[0] + ",", "")
+                              .trim()}
+                          </p>
+                        </div>
                         <Divider className="!mt-0 !mb-2" />
                         <div className="w-1/3">
                           <a
@@ -275,7 +293,16 @@ const Map = forwardRef(
             >
               <Popup>
                 <div>
-                  <div className="mb-4">{searchMarker.name}</div>
+                  <div className="mb-4">
+                    <h3 className="font-semibold">
+                      {searchMarker.name.split(",")[0]?.toUpperCase().trim()}
+                    </h3>
+                    <p className="text-xs !mt-1">
+                      {searchMarker.name
+                        .replace(searchMarker.name.split(",")[0] + ",", "")
+                        .trim()}
+                    </p>
+                  </div>
                   <Divider className="!mt-0 !mb-2" />
                   <div className="flex gap-4 items-center">
                     <div className="w-1/3">
