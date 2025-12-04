@@ -538,7 +538,7 @@ export default function LocationPage() {
           bodyPadding="0px"
         >
           <div>
-            <div className="relative aspect-[16/6] w-full bg-white overflow-hidden group">
+            <div className="relative aspect-[16/9] w-full bg-white overflow-hidden group">
               <Image
                 src={`${baseUrl}/${image}`}
                 className="object-cover w-full h-full object-center"
