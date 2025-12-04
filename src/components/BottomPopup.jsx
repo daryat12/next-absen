@@ -9,6 +9,9 @@ export default function BottomPopup({
   children,
   title,
   dragDistance = true,
+  maxHight = "90vh",
+  backgroundOverlay = true,
+  bodyPadding = "32px",
 }) {
   const controls = useAnimation();
   const [startY, setStartY] = useState(0);
@@ -59,17 +62,20 @@ export default function BottomPopup({
       {open && (
         <>
           {/* Background overlay */}
-          <motion.div
-            className="fixed inset-0 bg-black/50 z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
+          {backgroundOverlay && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+          )}
 
           {/* Popup container */}
           <motion.div
             key="popup"
-            className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-lg max-h-[90vh] flex flex-col touch-none"
+            className="absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-lg flex flex-col touch-none"
+            style={{ maxHeight: maxHight }}
             initial={{ y: "100%" }}
             animate={controls}
             exit={{ y: "110%" }}
@@ -91,7 +97,9 @@ export default function BottomPopup({
                 !dragDistance ? "mt-3" : ""
               }`}
             >
-              <h3 className="text-lg font-semibold">{title || ""}</h3>
+              <h3 className="text-lg font-semibold whitespace-normal text-left w-80">
+                {title || ""}
+              </h3>
               <button
                 className="flex justify-center items-center aspect-square w-8 h-auto active:bg-neutral-200 rounded-full cursor-pointer"
                 onClick={onClose}
@@ -99,7 +107,10 @@ export default function BottomPopup({
                 <CloseOutlined />
               </button>
             </div>
-            <div className="relative overflow-y-auto flex-1 px-8 pb-6 pt-2">
+            <div
+              className="relative overflow-y-auto flex-1 pb-6"
+              style={{ paddingLeft: bodyPadding, paddingRight: bodyPadding }}
+            >
               {children}
             </div>
           </motion.div>

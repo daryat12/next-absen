@@ -103,11 +103,18 @@ export default function CheckDetail() {
     window.onpopstate = null;
   };
 
+  const fetchWithTimeout = (url, options = {}, timeout = 20000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) => setTimeout(() => reject("timeout"), timeout)),
+    ]);
+  };
+
   const fetchData = async (data) => {
     setIsLoading(true);
     disableBack();
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/insAbsen`,
         {
           method: "POST",
@@ -116,7 +123,8 @@ export default function CheckDetail() {
             "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
           },
           body: JSON.stringify(data),
-        }
+        },
+        20000
       );
 
       const result = await response.json();
@@ -134,10 +142,20 @@ export default function CheckDetail() {
           setPhoto(null);
         }, 1500);
       } else {
-        showAlert("danger", result.message || "Gagal menyimpan data!");
+        showAlert("error", result.message || "Gagal menyimpan data!");
       }
     } catch (error) {
-      console.error("Gagal menyimpan data:", error);
+      if (error === "timeout") {
+        showAlert(
+          "error",
+          "Server terlalu lama merespon (lebih dari 20 detik)!"
+        );
+      } else {
+        showAlert("error", "Gagal menyimpan data!");
+      }
+
+      setIsLoading(false);
+      enableBack();
     }
   };
 
@@ -145,7 +163,7 @@ export default function CheckDetail() {
     setIsLoading(true);
     disableBack();
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/insPinLokasi`,
         {
           method: "POST",
@@ -154,7 +172,8 @@ export default function CheckDetail() {
             "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
           },
           body: JSON.stringify(data),
-        }
+        },
+        20000
       );
 
       const result = await response.json();
@@ -173,10 +192,20 @@ export default function CheckDetail() {
           setPhoto(null);
         }, 1500);
       } else {
-        showAlert("danger", result.message || "Gagal menyimpan data!");
+        showAlert("error", result.message || "Gagal menyimpan data!");
       }
     } catch (error) {
-      console.error("Gagal menyimpan data:", error);
+      if (error === "timeout") {
+        showAlert(
+          "error",
+          "Server terlalu lama merespon (lebih dari 20 detik)!"
+        );
+      } else {
+        showAlert("error", "Gagal menyimpan data!");
+      }
+
+      setIsLoading(false);
+      enableBack();
     }
   };
 

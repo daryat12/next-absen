@@ -555,7 +555,13 @@ export default function AttendanceListPage() {
           onClose={() => setIsFilterVisible(false)}
           title="Filter Kehadiran"
         >
-          <div className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilter();
+            }}
+            className="space-y-4"
+          >
             <div>
               <label className="block font-medium mb-1">Nama</label>
               <Input
@@ -600,27 +606,31 @@ export default function AttendanceListPage() {
 
             <div className="flex justify-between pt-4">
               <button
+                type="button"
                 onClick={() => resetFilter()}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer"
               >
                 Reset
               </button>
+
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => setIsFilterVisible(false)}
-                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md  cursor-pointer"
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer"
                 >
                   Batal
                 </button>
+
                 <button
-                  onClick={applyFilter}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md  cursor-pointer"
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer"
                 >
                   Terapkan
                 </button>
               </div>
             </div>
-          </div>
+          </form>
         </BottomPopup>
       </div>
     </>

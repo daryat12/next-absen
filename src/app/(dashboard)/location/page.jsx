@@ -1,15 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Empty, Image } from "antd";
 import { default as AddIcon } from "@mui/icons-material/AddLocationAlt";
-import MyLocationIcon from "@mui/icons-material/MyLocation";
-import SearchIcon from "@mui/icons-material/Search";
-import MapIcon from "@mui/icons-material/Map";
+import { default as PlacedIcon } from "@mui/icons-material/FmdGood";
+import { LoadingOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import { LoadingOutlined, CloseOutlined } from "@ant-design/icons";
-import { Empty } from "antd";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
+import MapIcon from "@mui/icons-material/Map";
+import DirectionsIcon from "@mui/icons-material/Directions";
+import BottomPopup from "@/components/BottomPopup";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -32,6 +34,7 @@ function SearchBox({
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [selected, setSelected] = useState(false);
 
   const getDistanceKm = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -123,6 +126,7 @@ function SearchBox({
       setResults(combinedResults);
       onResultsChange?.(combinedResults);
       onOverlayChange?.(true);
+      setSelected(false);
     } catch (err) {
       console.error("Search error:", err);
     } finally {
@@ -135,6 +139,7 @@ function SearchBox({
       setResults([]);
       onResultsChange?.([]);
       setHasSearched(false);
+      setSelected(false);
       onOverlayChange?.(false);
     }
   }, [query]);
@@ -146,32 +151,30 @@ function SearchBox({
           e.preventDefault();
           handleSearch(); // panggil fungsi search saat submit
         }}
-        className={`flex h-12 mx-5 bg-white rounded-full overflow-hidden items-center ${
+        className={`flex h-12 mx-5 px-1 bg-white rounded-full overflow-hidden items-center ${
           query ? "border border-gray-300" : "shadow"
         }`}
       >
+        <div
+          className={`pl-4 pr-2 ${selected ? "text-red-500" : "text-blue-500"}`}
+        >
+          <PlacedIcon />
+        </div>
+
         <input
           type="text"
           placeholder="Cari lokasi..."
           value={query}
-          onChange={(e) => {
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyUp={(e) => {
             const val = e.target.value;
             setQuery(val);
             handleSearch();
             if (val.trim() !== "") onOverlayChange?.(true);
             else onOverlayChange?.(false);
           }}
-          className="flex-grow pl-5 pr-3 py-2 outline-none text-sm"
+          className="flex-grow py-2 outline-none text-sm"
         />
-
-        <button
-          type="submit"
-          className={`text-neutral-600 hover:text-blue-500 cursor-pointer transition ${
-            query ? "px-0" : "px-4"
-          }`}
-        >
-          <SearchIcon />
-        </button>
 
         {query && (
           <button
@@ -192,21 +195,29 @@ function SearchBox({
 
       {query &&
         hasSearched &&
-        (results.length > 0 ? (
-          <div className="absolute top-15 w-full bg-white px-2 pb-3 text-left select-none">
-            {/* Header — tidak ikut scroll */}
-            <span className="block text-xs font-semibold p-4">
+        (query.length <= 1 ? (
+          // Query terlalu pendek → tampilkan Empty
+          <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
+            <Empty
+              description="Masukkan minimal 2 karakter untuk mencari."
+              className="mt-35"
+            />
+          </div>
+        ) : results.length > 0 ? (
+          // Tampilkan hasil pencarian
+          <div className="absolute top-15 w-full bg-white pb-3 text-left select-none">
+            <span className="block text-xs font-semibold py-4 pl-6 pr-4">
               Hasil Pencarian
             </span>
 
-            {/* Bagian scroll — hanya list saja */}
             <div className="max-h-[74vh] overflow-y-auto">
-              <ul className="w-full text-sm">
+              <ul className="w-full text-sm mb-10">
                 {results.map((item, idx) => (
                   <li
                     key={idx}
                     onClick={() => {
                       onSelectLocation(item);
+                      setSelected(true);
                       onOverlayChange?.(false);
                       setHasSearched(false);
                       setResults([]);
@@ -217,11 +228,11 @@ function SearchBox({
                     className="hover:bg-gray-100 cursor-pointer w-full"
                   >
                     <div className="flex justify-between items-center">
-                      <div className="flex flex-col justify-center gap-0.5 ml-2 w-12 items-center">
-                        <div className="bg-gray-200 p-1 flex justify-center items-center w-6 h-6 rounded-full">
-                          <PlaceOutlinedIcon className="!h-4 !w-4" />
+                      <div className="flex flex-col justify-center gap-1 ml-4 w-12 items-center">
+                        <div className="bg-gray-200 p-1 flex justify-center items-center w-7 h-7 rounded-full">
+                          <PlaceOutlinedIcon className="!h-5 !w-5" />
                         </div>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[11px] text-gray-400">
                           {item.distanceKm && item.distanceKm <= 101
                             ? item.distanceKm < 1
                               ? Math.round(item.distanceKm * 1000) + " m"
@@ -231,11 +242,9 @@ function SearchBox({
                       </div>
 
                       <div
-                        className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-4 pr-2 
+                        className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-5 pr-4 
                         ${
-                          idx < results.length - 1
-                            ? "border-b border-gray-200"
-                            : "mb-10"
+                          idx < results.length - 1 && "border-b border-gray-200"
                         }`}
                       >
                         <div className="flex flex-col max-w-[97%]">
@@ -263,6 +272,7 @@ function SearchBox({
             </div>
           </div>
         ) : (
+          // Tidak ada hasil
           <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
             <Empty
               description="Data yang anda cari tidak ditemukan."
@@ -283,6 +293,16 @@ export default function LocationPage() {
   const [results, setResults] = useState([]);
   const [pinLocation, setPinLocation] = useState([]);
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
+  const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const [image, setImage] = useState(null);
+
+  const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/pin_lokasi`;
+
+  const extractSN = (text) => {
+    if (!text) return null;
+    const match = text.match(/\(SN:\s*([A-Z0-9]+)\)/);
+    return match ? match[1] : null;
+  };
 
   const fetchLocation = async () => {
     try {
@@ -361,47 +381,93 @@ export default function LocationPage() {
     }
   }, [results]);
 
+  useEffect(() => {
+    if (!searchMarker) {
+      setIsDetailVisible(false);
+      setImage(null);
+      return;
+    }
+
+    // Buka popup karena marker ada
+    setIsDetailVisible(true);
+
+    const sn = extractSN(searchMarker.name);
+    const imageName = `${sn}.png`;
+    setImage(imageName);
+  }, [searchMarker]);
+
   const lat = coords?.lat ?? DEFAULT_LOCATION.lat;
   const lng = coords?.lng ?? DEFAULT_LOCATION.lng;
   const center = [lat, lng];
 
   const listLocations = pinLocation;
 
+  const isSameLocation = (current, target, currentZoom, targetZoom) =>
+    Math.abs(current.lat - target.lat) < 0.00001 &&
+    Math.abs(current.lng - target.lng) < 0.00001 &&
+    currentZoom === targetZoom;
+
   const handleLocateMe = () => {
-    if (coords && mapRef.current) {
-      mapRef.current.flyTo([coords.lat, coords.lng], 18);
-    } else {
+    if (!coords) {
       detectLocation("once");
+      return;
+    }
+
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+
+    const current = map.getCenter();
+    const currentZoom = map.getZoom();
+
+    const target = { lat: coords.lat, lng: coords.lng };
+    const targetZoom = 18;
+
+    // Jika posisi beda ATAU zoom beda → flyTo
+    if (!current || !isSameLocation(current, target, currentZoom, targetZoom)) {
+      map.flyTo([target.lat, target.lng], targetZoom);
     }
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-screen w-full text-center relative">
+    <div className="relative flex flex-col items-center justify-center h-screen w-full text-center relative overflow-hidden">
       <SearchBox
         locations={listLocations}
         myCoords={coords}
         onSelectLocation={(item) => {
-          if (item.display_name.toLowerCase().includes("terdekat")) {
-            // Arahkan ke lokasi pengguna sendiri
-            if (coords && mapRef.current) {
-              mapRef.current.flyTo([coords.lat, coords.lng], 16);
-              setSearchMarker(null); // hilangkan marker pencarian
-            }
-            return;
+          const isNearest = item.display_name
+            .toLowerCase()
+            .includes("terdekat");
+
+          const target = isNearest
+            ? coords
+            : { lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
+
+          if (!target || !mapRef.current) return;
+
+          const map = mapRef.current;
+
+          const current = map.getCenter();
+          const currentZoom = map.getZoom();
+          const targetZoom = 18;
+          const offsetTarget = 0.0009;
+
+          if (
+            !current ||
+            !isSameLocation(current, target, currentZoom, targetZoom)
+          ) {
+            map.flyTo([target.lat - offsetTarget, target.lng], targetZoom);
           }
 
-          const lat = parseFloat(item.lat);
-          const lon = parseFloat(item.lon);
-
-          if (mapRef.current) {
-            mapRef.current.flyTo([lat, lon], 16);
-          }
-
-          setSearchMarker({
-            lat,
-            lng: lon,
-            name: item.display_name,
-          });
+          setSearchMarker(
+            isNearest
+              ? null
+              : {
+                  lat: target.lat,
+                  lng: target.lng,
+                  name: item.display_name,
+                }
+          );
         }}
         onResultsChange={(res) => setResults(res)}
         onOverlayChange={(val) => setShowSearchOverlay(val)}
@@ -420,6 +486,7 @@ export default function LocationPage() {
         cluster={false}
         layer="clean"
         searchMarker={searchMarker}
+        onSearchMarkerClick={() => setIsDetailVisible(true)}
       />
 
       <div
@@ -459,6 +526,73 @@ export default function LocationPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {!showSearchOverlay && (
+        <BottomPopup
+          open={isDetailVisible}
+          onClose={() => setIsDetailVisible(false)}
+          title="Detail Lokasi"
+          maxHight="70vh"
+          backgroundOverlay={false}
+          bodyPadding="0px"
+        >
+          <div>
+            <div className="relative aspect-[16/6] w-full bg-white overflow-hidden group">
+              <Image
+                src={`${baseUrl}/${image}`}
+                className="object-cover w-full h-full object-center"
+                alt="Preview"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-transparent text-sm transition-colors duration-200 group-hover:text-white">
+                <EyeOutlined className="mr-1" />
+                <span>Preview</span>
+              </div>
+            </div>
+            <div className="py-4 text-sm text-left space-y-3 select-text">
+              <p className="px-8 font-semibold text-lg">
+                {searchMarker?.name.split(",")[0]?.toUpperCase().trim()}
+              </p>
+              <div className="flex gap-4 mb-4 items-center border-t border-b border-gray-200 py-4 px-8">
+                <div>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${searchMarker?.lat},${searchMarker?.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col justify-center items-center gap-0.5 !text-white"
+                  >
+                    <div className="flex items-center justify-center aspect-square w-10 rounded-full border p-1 bg-blue-500">
+                      <DirectionsIcon />
+                    </div>
+                    <span className="text-blue-500 text-xs">Rute</span>
+                  </a>
+                </div>
+              </div>
+              <div className="px-8 flex flex-col gap-2">
+                <div className="flex items-start gap-4">
+                  <div className="flex justify-center items-center text-blue-500 w-10 flex-shrink-0">
+                    <PlaceOutlinedIcon />
+                  </div>
+                  <p className="text-xs">
+                    {searchMarker?.name
+                      ?.replace(searchMarker.name.split(",")[0] + ",", "")
+                      .replace(/\s*\(SN:\s*[A-Z0-9]+\)/, "")
+                      .trim()}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <p className="flex justify-center items-center font-semibold text-blue-500 w-10 flex-shrink-0">
+                    SN
+                  </p>
+                  <p className="text-xs">
+                    {extractSN(searchMarker?.name)?.toUpperCase().trim()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </BottomPopup>
       )}
     </div>
   );

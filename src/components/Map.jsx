@@ -12,7 +12,6 @@ import {
   TileLayer,
   Marker,
   CircleMarker,
-  Popup,
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -21,9 +20,6 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import ReactDOMServer from "react-dom/server";
-import { Divider } from "antd";
-import DirectionsIcon from "@mui/icons-material/Directions";
-import ImageIcon from "@mui/icons-material/Image";
 
 // Cluster icon
 function ClusterIcon({ count }) {
@@ -35,7 +31,7 @@ function ClusterIcon({ count }) {
 }
 
 // Cluster layer
-function ClusterLayer({ locations }) {
+function ClusterLayer({ locations, onSearchMarkerClick }) {
   const map = useMap();
 
   useEffect(() => {
@@ -62,36 +58,9 @@ function ClusterLayer({ locations }) {
         fillOpacity: 0.5,
         weight: 2,
       });
-      marker.bindPopup(`
-        <div>
-          <div className="mb-4">
-            <h3 className="font-semibold">
-              ${loc.name.split(",")[0]?.toUpperCase().trim()}
-            </h3>
-            <p className="text-xs !mt-1">
-              ${loc.name.replace(loc.name.split(",")[0] + ",", "").trim()}
-            </p>
-          </div>
-          <hr class="mt-0 mb-2 !text-gray-200" />
-          <div class="w-1/3">
-            <a
-              href="https://www.google.com/maps/dir/?api=1&destination=${
-                loc.lat
-              },${loc.lng}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 !text-white"
-            >
-              <div class="flex items-center justify-center rounded-full border p-1 bg-blue-500">
-                <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="DirectionsIcon">
-                  <path d="m21.41 10.59-7.99-8c-.78-.78-2.05-.78-2.83 0l-8.01 8c-.78.78-.78 2.05 0 2.83l8.01 8c.78.78 2.05.78 2.83 0l7.99-8c.79-.79.79-2.05 0-2.83M13.5 14.5V12H10v3H8v-4c0-.55.45-1 1-1h4.5V7.5L17 11z"></path>
-                </svg>
-              </div>
-              <span class="text-blue-500">Lihat Rute</span>
-            </a>
-          </div>
-        </div>
-      `);
+      marker.on("click", () => {
+        if (onSearchMarkerClick) onSearchMarkerClick(loc);
+      });
       markers.addLayer(marker);
     });
 
@@ -166,13 +135,13 @@ const searchIconWithLabel = (name) =>
   L.divIcon({
     className: "custom-search-label",
     html: `
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 w-50 pointer-events-none">
         <img
           src="/map/icon/marker-red.png"
-          class="w-10 h-10"
+          class="w-10 h-10 pointer-events-auto"
         />
         <span
-          class="text-left text-xs font-semibold whitespace-nowrap max-w-[200px] pointer-events-none"
+          class="absolute top-1 left-10 text-left text-xs w-40 font-semibold whitespace-normal pointer-events-none"
           style="
             text-shadow:
               1px 1px 0 white,
@@ -204,28 +173,26 @@ const Map = forwardRef(
       cluster = true,
       layer = "default",
       searchMarker = null,
+      onSearchMarkerClick,
     },
     ref
   ) => {
     const mapRef = useRef();
-    const [showImage, setShowImage] = useState(false);
     const [currentUserLocation, setCurrentUserLocation] =
       useState(userLocation);
-    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/pin_lokasi`;
-
-    const extractSN = (text) => {
-      if (!text) return null;
-      const match = text.match(/\(SN:\s*([A-Z0-9]+)\)/);
-      return match ? match[1] : null;
-    };
-
-    const sn = extractSN(searchMarker?.name); // hasil: "DFW14146"
-    const imageName = `${sn}.png`;
 
     useImperativeHandle(ref, () => ({
       flyTo: (coords, zoom = 18) => {
         if (mapRef.current)
           mapRef.current.flyTo(coords, zoom, { animate: true, duration: 1 });
+      },
+      getCenter: () => {
+        if (mapRef.current) return mapRef.current.getCenter();
+        return null;
+      },
+      getZoom: () => {
+        if (mapRef.current) return mapRef.current.getZoom();
+        return null;
       },
     }));
 
@@ -259,7 +226,10 @@ const Map = forwardRef(
           {!locationDisable && (
             <>
               {cluster ? (
-                <ClusterLayer locations={locations} />
+                <ClusterLayer
+                  locations={locations}
+                  onSearchMarkerClick={onSearchMarkerClick}
+                />
               ) : (
                 locations.map((loc) => (
                   <CircleMarker
@@ -270,36 +240,12 @@ const Map = forwardRef(
                     fillColor={loc.colorMarker || "#ff0000"}
                     fillOpacity={0.5}
                     weight={2}
-                  >
-                    <Popup>
-                      <div>
-                        <div className="mb-4">
-                          <h3 className="font-semibold">
-                            {loc.name.split(",")[0]?.toUpperCase().trim()}
-                          </h3>
-                          <p className="text-xs !mt-1">
-                            {loc.name
-                              .replace(loc.name.split(",")[0] + ",", "")
-                              .trim()}
-                          </p>
-                        </div>
-                        <Divider className="!mt-0 !mb-2" />
-                        <div className="w-1/3">
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 !text-white"
-                          >
-                            <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
-                              <DirectionsIcon fontSize="small" />
-                            </div>
-                            <span className="text-blue-500">Lihat Rute</span>
-                          </a>
-                        </div>
-                      </div>
-                    </Popup>
-                  </CircleMarker>
+                    eventHandlers={{
+                      click: () => {
+                        if (onSearchMarkerClick) onSearchMarkerClick();
+                      },
+                    }}
+                  />
                 ))
               )}
             </>
@@ -313,76 +259,14 @@ const Map = forwardRef(
                 searchMarker.name.split(",")[0]?.toUpperCase().trim()
               )}
               zIndexOffset={500}
-            >
-              <Popup>
-                <div>
-                  <div className="mb-4">
-                    <h3 className="font-semibold">
-                      {searchMarker.name.split(",")[0]?.toUpperCase().trim()}
-                    </h3>
-                    <p className="text-xs !mt-1">
-                      {searchMarker.name
-                        .replace(searchMarker.name.split(",")[0] + ",", "")
-                        .trim()}
-                    </p>
-                  </div>
-                  <Divider className="!mt-0 !mb-2" />
-                  <div className="flex gap-4 items-center">
-                    <div className="w-1/3">
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${searchMarker.lat},${searchMarker.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 !text-white"
-                      >
-                        <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
-                          <DirectionsIcon fontSize="small" />
-                        </div>
-                        <span className="text-blue-500">Lihat Rute</span>
-                      </a>
-                    </div>
-                    {sn && (
-                      <div
-                        className="flex items-center gap-2 text-white cursor-pointer"
-                        onClick={() => setShowImage(!showImage)}
-                      >
-                        <div className="flex items-center justify-center rounded-full border p-1 bg-blue-500">
-                          <ImageIcon fontSize="small" />
-                        </div>
-                        <span className="text-blue-500">Lihat Gambar</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
+              eventHandlers={{
+                click: () => {
+                  if (onSearchMarkerClick) onSearchMarkerClick();
+                },
+              }}
+            />
           )}
         </MapContainer>
-        {showImage && (
-          <div
-            className="absolute top-14 left-0 z-[1000] 
-                     bg-white w-full h-[calc(100vh-56px)] flex flex-col"
-          >
-            {/* Bagian gambar */}
-            <div className="flex-1 bg-white overflow-hidden">
-              <img
-                src={`${baseUrl}/${imageName}`}
-                alt="Preview"
-                className="object-cover w-full h-full object-center"
-              />
-            </div>
-
-            {/* Tombol */}
-            <div className="p-3 bg-white">
-              <button
-                className="bg-gray-400 hover:bg-gray-500 text-sm text-white rounded-md w-full h-9 cursor-pointer"
-                onClick={() => setShowImage(false)}
-              >
-                Tutup Gambar
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
