@@ -402,8 +402,14 @@ export default function LocationPage() {
 
   const listLocations = pinLocation;
 
-  const isSameLocation = (current, target, currentZoom, targetZoom) =>
-    Math.abs(current.lat - target.lat) < 0.00001 &&
+  const isSameLocation = (
+    current,
+    target,
+    currentZoom,
+    targetZoom,
+    offsetTarget = 0
+  ) =>
+    Math.abs(current.lat - target.lat - offsetTarget) < 0.00001 &&
     Math.abs(current.lng - target.lng) < 0.00001 &&
     currentZoom === targetZoom;
 
@@ -454,7 +460,13 @@ export default function LocationPage() {
 
           if (
             !current ||
-            !isSameLocation(current, target, currentZoom, targetZoom)
+            !isSameLocation(
+              current,
+              target,
+              currentZoom,
+              targetZoom,
+              offsetTarget
+            )
           ) {
             map.flyTo([target.lat - offsetTarget, target.lng], targetZoom);
           }
