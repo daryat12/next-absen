@@ -25,7 +25,7 @@ function ImageActions({ imageUrl, description }) {
       return;
     }
 
-    const img = new Image();
+    const img = new window.Image();
     img.onload = () => setIsImageValid(true);
     img.onerror = () => setIsImageValid(false);
     img.src = imageUrl;

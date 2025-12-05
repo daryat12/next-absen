@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Empty, Image } from "antd";
+import { Empty, Image, Select } from "antd";
 import { default as AddIcon } from "@mui/icons-material/AddLocationAlt";
 import { default as PlacedIcon } from "@mui/icons-material/FmdGood";
 import { LoadingOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
@@ -12,6 +12,8 @@ import MyLocationIcon from "@mui/icons-material/MyLocation";
 import MapIcon from "@mui/icons-material/Map";
 import DirectionsIcon from "@mui/icons-material/Directions";
 import BottomPopup from "@/components/BottomPopup";
+import ShareIcon from "@mui/icons-material/Share";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -22,6 +24,8 @@ const Map = dynamic(() => import("@/components/Map"), {
     </div>
   ),
 });
+
+const { Option } = Select;
 
 function SearchBox({
   onSelectLocation,
@@ -145,7 +149,7 @@ function SearchBox({
   }, [query]);
 
   return (
-    <div className="fixed md:absolute top-18 w-full z-50">
+    <div className="fixed md:absolute top-18 w-full z-20">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -293,14 +297,26 @@ export default function LocationPage() {
   const [results, setResults] = useState([]);
   const [pinLocation, setPinLocation] = useState([]);
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
+  const [isSettingVisible, setIsSettingVisible] = useState(false);
   const [image, setImage] = useState(null);
+  const [isImageValid, setIsImageValid] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [setting, setSetting] = useState({
+    location: "hide",
+    group: "no",
+  });
+  const [applySetting, setApplySetting] = useState({
+    locationDisable: true,
+    cluster: false,
+  });
 
   const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/pin_lokasi`;
 
   const extractSN = (text) => {
     if (!text) return null;
-    const match = text.match(/\(SN:\s*([A-Z0-9]+)\)/);
+    const match = text.match(/\(SN:\s*([A-Z0-9-]+)\)/i);
     return match ? match[1] : null;
   };
 
@@ -382,19 +398,40 @@ export default function LocationPage() {
   }, [results]);
 
   useEffect(() => {
-    if (!searchMarker) {
+    setImage(null);
+
+    if (!selectedLocation) {
       setIsDetailVisible(false);
-      setImage(null);
       return;
     }
 
     // Buka popup karena marker ada
     setIsDetailVisible(true);
 
-    const sn = extractSN(searchMarker.name);
+    const sn = extractSN(selectedLocation.name);
     const imageName = `${sn}.png`;
-    setImage(imageName);
-  }, [searchMarker]);
+
+    const imageUrl = `${baseUrl}/${imageName}`;
+
+    setImage(imageUrl);
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    if (!image) {
+      setIsImageValid(false);
+      return;
+    }
+
+    const img = new window.Image();
+    img.onload = () => setIsImageValid(true);
+    img.onerror = () => setIsImageValid(false);
+    img.src = image;
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [image]);
 
   const lat = coords?.lat ?? DEFAULT_LOCATION.lat;
   const lng = coords?.lng ?? DEFAULT_LOCATION.lng;
@@ -409,8 +446,8 @@ export default function LocationPage() {
     targetZoom,
     offsetTarget = 0
   ) =>
-    Math.abs(current.lat - target.lat - offsetTarget) < 0.0001 &&
-    Math.abs(current.lng - target.lng) < 0.0001 &&
+    Math.abs(current.lat - (target.lat - offsetTarget)) < 0.0002 &&
+    Math.abs(current.lng - target.lng) < 0.0002 &&
     currentZoom === targetZoom;
 
   const handleLocateMe = () => {
@@ -435,6 +472,57 @@ export default function LocationPage() {
     }
   };
 
+  const handleShare = async () => {
+    const url = `https://www.google.com/maps?q=${selectedLocation?.lat},${selectedLocation?.lng}`;
+
+    if (!navigator.share) {
+      await navigator.clipboard.writeText(url);
+      alert("Link lokasi disalin ke clipboard!");
+      return;
+    }
+
+    if (isSharing) return; // cegah double click
+
+    try {
+      setIsSharing(true);
+      await navigator.share({
+        title: "Lokasi",
+        text: "Bagikan lokasi ini",
+        url,
+      });
+    } catch (err) {
+      console.log("Share dibatalkan atau error:", err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleChange = (key, value) => {
+    setSetting((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Update applySetting berdasarkan setting saat submit
+    const newApplySetting = {
+      locationDisable: setting.location === "hide",
+      cluster: setting.group === "yes",
+    };
+
+    setApplySetting(newApplySetting);
+    setIsSettingVisible(false);
+  };
+
+  const handleReset = () => {
+    setSetting({
+      location: "hide",
+      group: "no",
+    });
+    setApplySetting({ locationDisable: true, cluster: false });
+    setIsSettingVisible(false);
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center h-screen w-full text-center relative overflow-hidden">
       <SearchBox
@@ -456,7 +544,7 @@ export default function LocationPage() {
           const current = map.getCenter();
           const currentZoom = map.getZoom();
           const targetZoom = 18;
-          const offsetTarget = 0.0009;
+          const offsetTarget = 0.001;
 
           if (
             !current ||
@@ -480,6 +568,15 @@ export default function LocationPage() {
                   name: item.display_name,
                 }
           );
+          setSelectedLocation(
+            isNearest
+              ? null
+              : {
+                  lat: target.lat,
+                  lng: target.lng,
+                  name: item.display_name,
+                }
+          );
         }}
         onResultsChange={(res) => setResults(res)}
         onOverlayChange={(val) => setShowSearchOverlay(val)}
@@ -492,13 +589,15 @@ export default function LocationPage() {
       <Map
         ref={mapRef}
         locations={listLocations}
-        locationDisable={true}
+        locationDisable={applySetting.locationDisable}
         center={center}
         userLocation={coords}
-        cluster={false}
+        cluster={applySetting.cluster}
         layer="clean"
         searchMarker={searchMarker}
-        onSearchMarkerClick={() => setIsDetailVisible(true)}
+        onDetailMarkerClick={() => setIsDetailVisible(true)}
+        onSelectLocation={(loc) => setSelectedLocation(loc)}
+        onSearchMarker={(loc) => setSearchMarker(loc)}
       />
 
       <div
@@ -517,6 +616,18 @@ export default function LocationPage() {
         }}
       >
         RDN Maps
+      </div>
+
+      <div className="fixed md:absolute top-36 right-4 flex flex-col gap-2 justify-end items-end text-blue-500">
+        <div className="flex flex-col gap-4 justify-end items-center">
+          <button
+            onClick={() => setIsSettingVisible(true)}
+            className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-3xl shadow-md"
+            title="Pengaturan Map"
+          >
+            <SettingsIcon className="!w-7 !h-7 hover:animate-spin" />
+          </button>
+        </div>
       </div>
 
       {coords && (
@@ -541,70 +652,169 @@ export default function LocationPage() {
       )}
 
       {!showSearchOverlay && (
-        <BottomPopup
-          open={isDetailVisible}
-          onClose={() => setIsDetailVisible(false)}
-          title="Detail Lokasi"
-          maxHight="70vh"
-          backgroundOverlay={false}
-          bodyPadding="0px"
-        >
-          <div>
-            <div className="relative aspect-[16/9] w-full bg-white overflow-hidden group">
-              <Image
-                src={`${baseUrl}/${image}`}
-                className="object-cover w-full h-full object-center"
-                alt="Preview"
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-transparent text-sm transition-colors duration-200 group-hover:text-white">
-                <EyeOutlined className="mr-1" />
-                <span>Preview</span>
-              </div>
-            </div>
-            <div className="py-4 text-sm text-left space-y-3 select-text">
-              <p className="px-8 font-semibold text-lg">
-                {searchMarker?.name.split(",")[0]?.toUpperCase().trim()}
-              </p>
-              <div className="flex gap-4 mb-4 items-center border-t border-b border-gray-200 py-4 px-8">
-                <div>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${searchMarker?.lat},${searchMarker?.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col justify-center items-center gap-0.5 !text-white"
-                  >
-                    <div className="flex items-center justify-center aspect-square w-10 rounded-full border p-1 bg-blue-500">
-                      <DirectionsIcon />
-                    </div>
-                    <span className="text-blue-500 text-xs">Rute</span>
-                  </a>
-                </div>
-              </div>
-              <div className="px-8 flex flex-col gap-2">
-                <div className="flex items-start gap-4">
-                  <div className="flex justify-center items-center text-blue-500 w-10 flex-shrink-0">
-                    <PlaceOutlinedIcon />
-                  </div>
-                  <p className="text-xs">
-                    {searchMarker?.name
-                      ?.replace(searchMarker.name.split(",")[0] + ",", "")
-                      .replace(/\s*\(SN:\s*[A-Z0-9]+\)/, "")
-                      .trim()}
-                  </p>
-                </div>
+        <>
+          <BottomPopup
+            open={isSettingVisible}
+            onClose={() => setIsSettingVisible(false)}
+            title="Pengaturan Map"
+          >
+            <form onSubmit={handleSubmit} className="space-y-4 text-left">
+              {/* Lokasi */}
+              <div>
+                <label className="block font-medium mb-1">Lokasi</label>
+                <Select
+                  value={setting.location}
+                  onChange={(value) => {
+                    // Update location
+                    handleChange("location", value);
 
-                <div className="flex items-center gap-4">
-                  <p className="flex justify-center items-center font-semibold text-blue-500 w-10 flex-shrink-0">
-                    SN
-                  </p>
-                  <p className="text-xs">
-                    {extractSN(searchMarker?.name)?.toUpperCase().trim()}
-                  </p>
+                    // Jika hide, otomatis set group ke "no"
+                    if (value === "hide") {
+                      handleChange("group", "no");
+                    }
+                  }}
+                  className="w-full !h-10"
+                >
+                  <Option value="hide">Jangan tampilkan</Option>
+                  <Option value="all">Tampilkan semua</Option>
+                </Select>
+              </div>
+
+              {/* Kelompokan hanya ditampilkan jika location = all */}
+              {setting.location === "all" && (
+                <div>
+                  <label className="block font-medium mb-1">Kelompokan</label>
+                  <Select
+                    value={setting.group}
+                    onChange={(value) => handleChange("group", value)}
+                    className="w-full !h-10"
+                  >
+                    <Option value="no">Tidak</Option>
+                    <Option value="yes">Ya</Option>
+                  </Select>
+                </div>
+              )}
+
+              {/* Tombol aksi */}
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer"
+                >
+                  Reset
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingVisible(false)}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer"
+                  >
+                    Terapkan
+                  </button>
+                </div>
+              </div>
+            </form>
+          </BottomPopup>
+
+          <BottomPopup
+            open={isDetailVisible}
+            onClose={() => {
+              setIsDetailVisible(false);
+              setImage(null);
+            }}
+            title="Detail Lokasi"
+            maxHight="70vh"
+            backgroundOverlay={false}
+            bodyPadding="0px"
+          >
+            <div>
+              <div className="relative aspect-[16/9] w-full bg-gray-200 overflow-hidden group">
+                {isImageValid ? (
+                  <>
+                    <Image
+                      src={image}
+                      className="object-cover w-full h-full object-center"
+                      alt="Preview"
+                    />
+
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-transparent text-sm transition-colors duration-200 group-hover:text-white">
+                      <EyeOutlined className="mr-1" />
+                      <span>Preview</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-sm transition-colors duration-200 text-black/30">
+                    <span>No Image</span>
+                  </div>
+                )}
+              </div>
+              <div className="py-4 text-sm text-left space-y-3 select-text">
+                <p className="px-8 font-semibold text-lg">
+                  {selectedLocation?.name.split(",")[0]?.toUpperCase().trim()}
+                </p>
+                <div className="flex justify-around gap-4 mb-4 items-center border-t border-b border-gray-200 py-4 px-8">
+                  {/* Rute di Google Maps */}
+                  <div>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${selectedLocation?.lat},${selectedLocation?.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col justify-center items-center gap-0.5 !text-white"
+                    >
+                      <div className="flex items-center justify-center aspect-square w-10 rounded-full border p-1 bg-blue-500">
+                        <DirectionsIcon />
+                      </div>
+                      <span className="text-blue-500 text-xs">Rute</span>
+                    </a>
+                  </div>
+
+                  {/* Bagikan Lokasi */}
+                  <div>
+                    <button
+                      onClick={handleShare}
+                      className="flex flex-col justify-center items-center gap-0.5 !text-white cursor-pointer"
+                    >
+                      <div className="flex items-center justify-center aspect-square w-10 rounded-full border p-1 bg-blue-500">
+                        <ShareIcon fontSize="small" />
+                      </div>
+                      <span className="text-blue-500 text-xs">Bagikan</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="px-8 flex flex-col gap-2">
+                  <div className="flex items-center gap-4">
+                    <p className="flex justify-center items-center font-semibold text-blue-500 w-10 flex-shrink-0">
+                      SN
+                    </p>
+                    <p className="text-xs">
+                      {extractSN(selectedLocation?.name)?.toUpperCase().trim()}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="flex justify-center items-center text-blue-500 w-10 flex-shrink-0">
+                      <PlaceOutlinedIcon />
+                    </div>
+                    <p className="text-xs">
+                      {selectedLocation?.name
+                        ?.replace(selectedLocation.name.split(",")[0] + ",", "")
+                        .replace(/\s*\(SN:\s*[A-Z0-9]+\)/, "")
+                        .trim()}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </BottomPopup>
+          </BottomPopup>
+        </>
       )}
     </div>
   );
