@@ -124,7 +124,7 @@ export default function CheckDetail() {
           },
           body: JSON.stringify(data),
         },
-        20000
+        30000
       );
 
       const result = await response.json();
@@ -148,7 +148,7 @@ export default function CheckDetail() {
       if (error === "timeout") {
         showAlert(
           "error",
-          "Server terlalu lama merespon (lebih dari 20 detik)!"
+          "Server terlalu lama merespon (lebih dari 30 detik)!"
         );
       } else {
         showAlert("error", "Gagal menyimpan data!");
@@ -173,7 +173,7 @@ export default function CheckDetail() {
           },
           body: JSON.stringify(data),
         },
-        20000
+        30000
       );
 
       const result = await response.json();
@@ -198,7 +198,7 @@ export default function CheckDetail() {
       if (error === "timeout") {
         showAlert(
           "error",
-          "Server terlalu lama merespon (lebih dari 20 detik)!"
+          "Server terlalu lama merespon (lebih dari 30 detik)!"
         );
       } else {
         showAlert("error", "Gagal menyimpan data!");
