@@ -409,8 +409,8 @@ export default function LocationPage() {
     targetZoom,
     offsetTarget = 0
   ) =>
-    Math.abs(current.lat - target.lat - offsetTarget) < 0.00001 &&
-    Math.abs(current.lng - target.lng) < 0.00001 &&
+    Math.abs(current.lat - target.lat - offsetTarget) < 0.0001 &&
+    Math.abs(current.lng - target.lng) < 0.0001 &&
     currentZoom === targetZoom;
 
   const handleLocateMe = () => {
