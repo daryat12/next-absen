@@ -25,7 +25,7 @@ import ReactDOMServer from "react-dom/server";
 // Cluster icon
 function ClusterIcon({ count }) {
   return (
-    <div className="bg-red-500 text-white border-2 border-white rounded-full w-10 h-10 flex items-center justify-center font-bold shadow">
+    <div className="bg-[#12549a] text-white border-2 border-white rounded-full w-10 h-10 flex items-center justify-center font-bold shadow">
       {count}
     </div>
   );
@@ -79,21 +79,21 @@ function ClusterLayer({
         const dist = distanceInMeters(
           searchMarker.lat,
           searchMarker.lng,
-          loc.lat,
-          loc.lng
+          loc.coords.lat,
+          loc.coords.lng
         );
 
         // hide jika: sama persis atau terlalu dekat
         hide =
-          (loc.lat === searchMarker.lat &&
-            loc.lng === searchMarker.lng &&
+          (loc.coords.lat === searchMarker.lat &&
+            loc.coords.lng === searchMarker.lng &&
             loc.name === searchMarker.name) ||
           dist <= radiusMeter;
       }
 
       if (hide) return;
 
-      const marker = L.circleMarker([loc.lat, loc.lng], {
+      const marker = L.circleMarker([loc.coords.lat, loc.coords.lng], {
         radius: 10,
         color: loc.colorMarker || "#ff0000",
         fillColor: loc.colorMarker || "#ff0000",
@@ -106,13 +106,13 @@ function ClusterLayer({
 
         onDetailMarkerClick?.(loc);
         onSearchMarker?.({
-          lat: loc.lat,
-          lng: loc.lng,
+          lat: loc.coords.lat,
+          lng: loc.coords.lng,
           name: loc.name,
         });
         onSelectLocation?.({
-          lat: loc.lat,
-          lng: loc.lng,
+          lat: loc.coords.lat,
+          lng: loc.coords.lng,
           name: loc.name,
         });
       });
@@ -287,7 +287,12 @@ const Map = forwardRef(
         >
           <TileLayer url={layerUrl} />
 
-          <MapClickHandler onClearSearch={() => onSearchMarker(null)} />
+          <MapClickHandler
+            onClearSearch={() => {
+              onSearchMarker(null);
+              onSelectLocation(null);
+            }}
+          />
 
           {/* Lokasi Pengguna */}
           {currentUserLocation && (
@@ -310,8 +315,8 @@ const Map = forwardRef(
                   {locations.map((loc) => {
                     const isSameMarker =
                       searchMarker &&
-                      loc.lat === searchMarker.lat &&
-                      loc.lng === searchMarker.lng &&
+                      loc.coords.lat === searchMarker.lat &&
+                      loc.coords.lng === searchMarker.lng &&
                       loc.name === searchMarker.name;
 
                     // Jika marker ini cocok dengan searchMarker → skip (hide)
@@ -320,7 +325,7 @@ const Map = forwardRef(
                     return (
                       <CircleMarker
                         key={loc.id}
-                        center={[loc.lat, loc.lng]}
+                        center={[loc.coords.lat, loc.coords.lng]}
                         radius={8}
                         color={loc.colorMarker || "#ff0000"}
                         fillColor={loc.colorMarker || "#ff0000"}
@@ -334,15 +339,15 @@ const Map = forwardRef(
 
                             if (onSearchMarker) {
                               onSearchMarker({
-                                lat: loc.lat,
-                                lng: loc.lng,
+                                lat: loc.coords.lat,
+                                lng: loc.coords.lng,
                                 name: loc.name,
                               });
                             }
                             if (onSelectLocation) {
                               onSelectLocation({
-                                lat: loc.lat,
-                                lng: loc.lng,
+                                lat: loc.coords.lat,
+                                lng: loc.coords.lng,
                                 name: loc.name,
                               });
                             }

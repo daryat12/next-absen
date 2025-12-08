@@ -84,10 +84,15 @@ function SearchBox({
           ...loc,
           source: "local",
           display_name: loc.name,
-          lat: loc.lat,
-          lon: loc.lng,
+          lat: loc.coords.lat,
+          lon: loc.coords.lng,
           distanceKm: myCoords
-            ? getDistanceKm(myCoords.lat, myCoords.lng, loc.lat, loc.lng)
+            ? getDistanceKm(
+                myCoords.lat,
+                myCoords.lng,
+                loc.coords.lat,
+                loc.coords.lng
+              )
             : null,
         }))
         .sort((a, b) => {
@@ -305,7 +310,7 @@ export default function LocationPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [setting, setSetting] = useState({
     location: "hide",
-    group: "no",
+    group: "yes",
   });
   const [applySetting, setApplySetting] = useState({
     locationDisable: true,
@@ -437,7 +442,22 @@ export default function LocationPage() {
   const lng = coords?.lng ?? DEFAULT_LOCATION.lng;
   const center = [lat, lng];
 
-  const listLocations = pinLocation;
+  const listLocations = (pinLocation || []).map((item) => {
+    let colorMarker = "#ff0000";
+    if (item.office === "PT. RDN ARTHA GRAFIKA") colorMarker = "#12549a";
+
+    return {
+      id: item.id,
+      office: item.office,
+      area: item.area,
+      name: item.name,
+      coords: {
+        lat: item.lat,
+        lng: item.lng,
+      },
+      colorMarker,
+    };
+  });
 
   const isSameLocation = (
     current,
@@ -517,7 +537,7 @@ export default function LocationPage() {
   const handleReset = () => {
     setSetting({
       location: "hide",
-      group: "no",
+      group: "yes",
     });
     setApplySetting({ locationDisable: true, cluster: false });
     setIsSettingVisible(false);
@@ -618,20 +638,20 @@ export default function LocationPage() {
         RDN Maps
       </div>
 
-      <div className="fixed md:absolute top-36 right-4 flex flex-col gap-2 justify-end items-end text-blue-500">
+      <div className="fixed md:absolute bottom-6 right-4 flex flex-col gap-10 justify-end items-end text-blue-500">
         <div className="flex flex-col gap-4 justify-end items-center">
           <button
-            onClick={() => setIsSettingVisible(true)}
+            onClick={() => {
+              setIsDetailVisible(false);
+              setIsSettingVisible(true);
+            }}
             className="flex justify-center items-center bg-white px-4 py-2 cursor-pointer aspect-square w-14 h-auto rounded-3xl shadow-md"
             title="Pengaturan Map"
           >
-            <SettingsIcon className="!w-7 !h-7 hover:animate-spin" />
+            <SettingsIcon className="!w-7 !h-7" />
           </button>
         </div>
-      </div>
-
-      {coords && (
-        <div className="fixed md:absolute bottom-6 right-4 flex flex-col gap-2 justify-end items-end text-blue-500">
+        {coords && (
           <div className="flex flex-col gap-4 justify-end items-center">
             <button
               onClick={handleLocateMe}
@@ -648,8 +668,8 @@ export default function LocationPage() {
               <AddIcon className="!w-7 !h-7" />
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {!showSearchOverlay && (
         <>
