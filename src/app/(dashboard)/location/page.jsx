@@ -751,7 +751,7 @@ export default function LocationPage() {
               setIsDetailVisible(false);
               setImage(null);
             }}
-            title="Detail"
+            title="Detail Lokasi"
             maxHight="70vh"
             backgroundOverlay={false}
             bodyPadding="0px"

@@ -23,9 +23,9 @@
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^4.2.2",
     "leaflet.markercluster": "^1.5.3",
-    "next": "15.5.5",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "15.5.7",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
@@ -33,7 +33,7 @@
     "@tailwindcss/postcss": "^4",
     "concurrently": "^9.2.1",
     "eslint": "^9",
-    "eslint-config-next": "15.5.5",
+    "eslint-config-next": "15.5.7",
     "tailwindcss": "^4"
   }
 }
