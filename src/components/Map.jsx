@@ -345,7 +345,7 @@ const Map = forwardRef(
       setCurrentUserLocation(userLocation);
     }, [userLocation]);
 
-    const flyToMarker = (lat, lng, zoom = 18, duration = 0.8, offset = 0) => {
+    const flyToMarker = (lat, lng, zoom = 18, duration = 1, offset = 0) => {
       const map = mapRef.current?._map || mapRef.current;
       if (!map || !map.flyTo) return;
 
@@ -468,13 +468,7 @@ const Map = forwardRef(
                 click: (e) => {
                   L.DomEvent.stopPropagation(e);
 
-                  flyToMarker(
-                    searchMarker.lat,
-                    searchMarker.lng,
-                    18,
-                    0.8,
-                    0.001
-                  );
+                  flyToMarker(searchMarker.lat, searchMarker.lng, 18, 1, 0.001);
 
                   if (onSelectLocation) {
                     onSelectLocation({
