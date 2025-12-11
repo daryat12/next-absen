@@ -615,7 +615,6 @@ export default function LocationPage() {
         cluster={applySetting.cluster}
         layer="clean"
         searchMarker={searchMarker}
-        onDetailMarkerClick={() => setIsDetailVisible(true)}
         onSelectLocation={(loc) => setSelectedLocation(loc)}
         onSearchMarker={(loc) => setSearchMarker(loc)}
       />

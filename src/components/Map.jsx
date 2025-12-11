@@ -63,9 +63,12 @@ function LocationMarkerSVG() {
   );
 }
 
-function ClusterIcon({ count }) {
+function ClusterIcon({ count, color }) {
   return (
-    <div className="bg-[#12549a] text-white border-2 border-white rounded-full w-10 h-10 flex items-center justify-center font-bold shadow">
+    <div
+      style={{ backgroundColor: color }}
+      className="text-white border-2 border-white rounded-full w-10 h-10 flex items-center justify-center font-bold shadow"
+    >
       {count}
     </div>
   );
@@ -74,15 +77,14 @@ function ClusterIcon({ count }) {
 function ClusterLayer({
   locations,
   searchMarker,
-  onDetailMarkerClick,
   onSearchMarker,
-  onSelectLocation,
+  flyToMarker,
 }) {
   const map = useMap();
   const radiusMeter = 50;
 
   const distanceInMeters = (lat1, lon1, lat2, lon2) => {
-    const R = 6371000; // meter
+    const R = 6371000;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
@@ -98,89 +100,101 @@ function ClusterLayer({
   useEffect(() => {
     if (!map || !locations?.length) return;
 
-    const markers = L.markerClusterGroup({
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
-      iconCreateFunction: (cluster) => {
-        const count = cluster.getChildCount();
-        return L.divIcon({
-          html: ReactDOMServer.renderToString(<ClusterIcon count={count} />),
-          className: "custom-cluster",
-          iconSize: [40, 40],
-        });
-      },
+    const grouped = {};
+    locations.forEach((loc) => {
+      if (!grouped[loc.office]) grouped[loc.office] = [];
+      grouped[loc.office].push(loc);
     });
 
-    locations.forEach((loc) => {
-      let hide = false;
+    const clusterGroups = [];
 
-      if (searchMarker) {
-        const dist = distanceInMeters(
-          searchMarker.lat,
-          searchMarker.lng,
-          loc.coords.lat,
-          loc.coords.lng
+    Object.keys(grouped).forEach((officeName) => {
+      const groupColor = grouped[officeName][0].colorMarker || "#ff0000";
+
+      const cluster = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true,
+        disableClusteringAtZoom: 18,
+        maxClusterRadius: 60,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          return L.divIcon({
+            html: ReactDOMServer.renderToString(
+              <ClusterIcon count={count} color={groupColor} />
+            ),
+            className: "custom-cluster",
+            iconSize: [40, 40],
+          });
+        },
+      });
+
+      grouped[officeName].forEach((loc) => {
+        let hide = false;
+
+        if (searchMarker) {
+          const dist = distanceInMeters(
+            searchMarker.lat,
+            searchMarker.lng,
+            loc.coords.lat,
+            loc.coords.lng
+          );
+
+          hide =
+            (loc.coords.lat === searchMarker.lat &&
+              loc.coords.lng === searchMarker.lng &&
+              loc.name === searchMarker.name) ||
+            dist <= radiusMeter;
+        }
+
+        if (hide) return;
+
+        const iconHtml = ReactDOMServer.renderToString(
+          <div
+            style={{
+              color: loc.colorMarker || "#ff0000",
+              fontSize: "30px",
+              lineHeight: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <LocationMarkerSVG />
+          </div>
         );
 
-        // hide jika: sama persis atau terlalu dekat
-        hide =
-          (loc.coords.lat === searchMarker.lat &&
-            loc.coords.lng === searchMarker.lng &&
-            loc.name === searchMarker.name) ||
-          dist <= radiusMeter;
-      }
+        const marker = L.marker([loc.coords.lat, loc.coords.lng], {
+          icon: L.divIcon({
+            html: iconHtml,
+            className: "custom-marker-icon",
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+          }),
+        });
 
-      if (hide) return;
+        marker.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
 
-      const iconHtml = ReactDOMServer.renderToString(
-        <div
-          style={{
-            color: loc.colorMarker || "#ff0000",
-            fontSize: "30px", // kontrol ukuran marker (1em)
-            lineHeight: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <LocationMarkerSVG />
-        </div>
-      );
+          flyToMarker?.(loc.coords.lat, loc.coords.lng, 10);
 
-      const marker = L.marker([loc.coords.lat, loc.coords.lng], {
-        icon: L.divIcon({
-          html: iconHtml,
-          className: "custom-marker-icon",
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-        }),
+          onSearchMarker?.({
+            lat: loc.coords.lat,
+            lng: loc.coords.lng,
+            name: loc.name,
+          });
+        });
+
+        cluster.addLayer(marker);
       });
 
-      marker.on("click", (e) => {
-        L.DomEvent.stopPropagation(e);
-
-        onDetailMarkerClick?.(loc);
-        onSearchMarker?.({
-          lat: loc.coords.lat,
-          lng: loc.coords.lng,
-          name: loc.name,
-        });
-        onSelectLocation?.({
-          lat: loc.coords.lat,
-          lng: loc.coords.lng,
-          name: loc.name,
-        });
-      });
-
-      markers.addLayer(marker);
+      map.addLayer(cluster);
+      clusterGroups.push(cluster);
     });
 
-    map.addLayer(markers);
-
     return () => {
-      map.removeLayer(markers);
+      clusterGroups.forEach((cg) => map.removeLayer(cg));
     };
-  }, [map, locations, searchMarker]); // <- Tambahkan di sini
+  }, [map, locations, searchMarker]);
 
   return null;
 }
@@ -254,15 +268,22 @@ function MapClickHandler({ onClearSearch }) {
   return null;
 }
 
-const searchIconWithLabel = (name, bounce = false) =>
+const searchIconWithLabel = (name) =>
   L.divIcon({
     className: "custom-search-label",
     html: `
       <div class="flex items-center gap-1 w-50 pointer-events-none">
-        <img
-          src="/map/icon/marker-red.png"
-          class="w-10 h-10 pointer-events-auto ${bounce ? "marker-bounce" : ""}"
-        />
+        <div id="select-marker-icon" class="text-red-500 text-[40px] pointer-events-auto stroke-1 stroke-white">
+          <svg
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 2c-4.2 0-8 3.22-8 8.2 0 3.32 2.67 7.25 8 11.8 5.33-4.55 8-8.48 8-11.8C20 5.22 16.2 2 12 2m0 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2"></path>
+          </svg>
+        </div>
         <span
           class="absolute top-1 left-10 text-left text-xs text-red-400 w-40 font-semibold whitespace-normal pointer-events-none"
           style="
@@ -296,7 +317,6 @@ const Map = forwardRef(
       cluster = true,
       layer = "default",
       searchMarker = null,
-      onDetailMarkerClick,
       onSelectLocation,
       onSearchMarker,
     },
@@ -324,6 +344,23 @@ const Map = forwardRef(
     useEffect(() => {
       setCurrentUserLocation(userLocation);
     }, [userLocation]);
+
+    const flyToMarker = (lat, lng, zoom = 18, duration = 0.8, offset = 0) => {
+      const map = mapRef.current?._map || mapRef.current;
+      if (!map || !map.flyTo) return;
+
+      map.flyTo(
+        {
+          lat: lat - offset,
+          lng,
+        },
+        map.getZoom() < zoom ? zoom : map.getZoom(),
+        {
+          animate: true,
+          duration,
+        }
+      );
+    };
 
     const layerUrl =
       layer === "clean"
@@ -361,9 +398,8 @@ const Map = forwardRef(
                 <ClusterLayer
                   locations={locations}
                   searchMarker={searchMarker}
-                  onDetailMarkerClick={onDetailMarkerClick}
                   onSearchMarker={onSearchMarker}
-                  onSelectLocation={onSelectLocation}
+                  flyToMarker={flyToMarker}
                 />
               ) : (
                 <>
@@ -401,17 +437,10 @@ const Map = forwardRef(
                           click: (e) => {
                             L.DomEvent.stopPropagation(e);
 
-                            if (onDetailMarkerClick) onDetailMarkerClick();
+                            flyToMarker(loc.coords.lat, loc.coords.lng, 10);
 
                             if (onSearchMarker) {
                               onSearchMarker({
-                                lat: loc.coords.lat,
-                                lng: loc.coords.lng,
-                                name: loc.name,
-                              });
-                            }
-                            if (onSelectLocation) {
-                              onSelectLocation({
                                 lat: loc.coords.lat,
                                 lng: loc.coords.lng,
                                 name: loc.name,
@@ -432,22 +461,21 @@ const Map = forwardRef(
             <Marker
               position={[searchMarker.lat, searchMarker.lng]}
               icon={searchIconWithLabel(
-                searchMarker.name.split(",")[0]?.toUpperCase().trim(),
-                true
+                searchMarker.name.split(",")[0]?.toUpperCase().trim()
               )}
               zIndexOffset={500}
               eventHandlers={{
                 click: (e) => {
                   L.DomEvent.stopPropagation(e);
 
-                  if (onDetailMarkerClick) onDetailMarkerClick();
-                  if (onSearchMarker) {
-                    onSearchMarker({
-                      lat: searchMarker.lat,
-                      lng: searchMarker.lng,
-                      name: searchMarker.name,
-                    });
-                  }
+                  flyToMarker(
+                    searchMarker.lat,
+                    searchMarker.lng,
+                    18,
+                    0.8,
+                    0.001
+                  );
+
                   if (onSelectLocation) {
                     onSelectLocation({
                       lat: searchMarker.lat,

@@ -10,7 +10,7 @@ import { ProfileProvider, useProfile } from "@/context/ProfileContext"; // ✅ I
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import FingerprintRoundedIcon from "@mui/icons-material/FingerprintRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 function Drawer() {
   const { showProfile, setShowProfile } = useProfile(); // ✅ ambil dari context
@@ -175,7 +175,7 @@ function NavBack({ isHiddenNavBack = true }) {
           onClick={() => router.back()}
           className="flex items-center justify-center w-10 h-10 bg-white rounded-full active:opacity-70 active:bg-neutral-200 transition cursor-pointer"
         >
-          <ArrowBackIosNewIcon fontSize="small" />
+          <ArrowBackIcon fontSize="small" />
         </button>
       </div>
 

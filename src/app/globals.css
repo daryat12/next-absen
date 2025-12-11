@@ -50,15 +50,3 @@ html {
   color: white !important;
 }
 
-@keyframes marker-bounce {
-  0% { transform: translateY(0) scale(0.2); }
-  40% { transform: translateY(-10px) scale(0.9, 1.1); } /* naik + stretch */
-  60% { transform: translateY(0) scale(1.1, 0.9); }      /* jatuh + compress */
-  90% { transform: translateY(-5px) scale(0.95, 1.05); } /* pantulan kecil */
-  100% { transform: translateY(0) scale(1); }
-}
-
-.marker-bounce {
-  animation: marker-bounce 0.5s cubic-bezier(.28,.84,.42,1) 1;
-}
-
