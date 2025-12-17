@@ -311,10 +311,12 @@ export default function LocationPage() {
   const [setting, setSetting] = useState({
     location: "hide",
     group: "yes",
+    sort: "all",
   });
   const [applySetting, setApplySetting] = useState({
     locationDisable: true,
     cluster: false,
+    clusterSort: "all",
   });
 
   const baseUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/public/pin_lokasi`;
@@ -443,8 +445,35 @@ export default function LocationPage() {
   const center = [lat, lng];
 
   const listLocations = (pinLocation || []).map((item) => {
-    let colorMarker = "#ff0000";
-    if (item.office === "PT. RDN ARTHA GRAFIKA") colorMarker = "#12549a";
+    const officeColorMap = {
+      "PT. RDN ARTHA GRAFIKA": "#12549a",
+      "PT. RDN ARTHA SENTOSA": "#00a1f1",
+      "PT. RDN CIPTA SOLUSI": "#001a47",
+    };
+    const areaColorMap = {
+      "PT. RDN ARTHA GRAFIKA": {
+        JKT: "#1E40AF", // biru royal
+        BKS: "#16A34A", // hijau
+        SBY: "#DC2626", // merah
+        YYK: "#7C3AED", // ungu
+        MDN: "#F59E0B", // oranye
+      },
+      "PT. RDN ARTHA SENTOSA": {
+        BDG: "#0EA5E9", // biru langit
+        CRB: "#22C55E", // hijau terang
+        TGL: "#E11D48", // merah rose
+      },
+      "PT. RDN CIPTA SOLUSI": {
+        JKT: "#111827", // hitam kebiruan
+        TGR: "#F97316", // oranye terang
+      },
+    };
+
+    const officeKey = item.office?.trim().toUpperCase();
+    const areaKey = item.area?.trim().toUpperCase();
+
+    const officeColor = officeColorMap[officeKey] || "#ff0000";
+    const areaColor = areaColorMap[officeKey]?.[areaKey] || officeColor;
 
     return {
       id: item.id,
@@ -455,7 +484,8 @@ export default function LocationPage() {
         lat: item.lat,
         lng: item.lng,
       },
-      colorMarker,
+      officeColor,
+      areaColor,
     };
   });
 
@@ -528,6 +558,7 @@ export default function LocationPage() {
     const newApplySetting = {
       locationDisable: setting.location === "hide",
       cluster: setting.group === "yes",
+      clusterSort: setting.sort,
     };
 
     setApplySetting(newApplySetting);
@@ -538,8 +569,13 @@ export default function LocationPage() {
     setSetting({
       location: "hide",
       group: "yes",
+      sort: "all",
     });
-    setApplySetting({ locationDisable: true, cluster: false });
+    setApplySetting({
+      locationDisable: true,
+      cluster: false,
+      clusterSort: "all",
+    });
     setIsSettingVisible(false);
   };
 
@@ -613,6 +649,7 @@ export default function LocationPage() {
         center={center}
         userLocation={coords}
         cluster={applySetting.cluster}
+        clusterSort={applySetting.clusterSort}
         layer="clean"
         searchMarker={searchMarker}
         onSelectLocation={(loc) => setSelectedLocation(loc)}
@@ -690,6 +727,7 @@ export default function LocationPage() {
                     // Jika hide, otomatis set group ke "no"
                     if (value === "hide") {
                       handleChange("group", "no");
+                      handleChange("sort", "all");
                     }
                   }}
                   className="w-full !h-10"
@@ -701,17 +739,31 @@ export default function LocationPage() {
 
               {/* Kelompokan hanya ditampilkan jika location = all */}
               {setting.location === "all" && (
-                <div>
-                  <label className="block font-medium mb-1">Kelompokan</label>
-                  <Select
-                    value={setting.group}
-                    onChange={(value) => handleChange("group", value)}
-                    className="w-full !h-10"
-                  >
-                    <Option value="no">Tidak</Option>
-                    <Option value="yes">Ya</Option>
-                  </Select>
-                </div>
+                <>
+                  <div>
+                    <label className="block font-medium mb-1">Kelompokan</label>
+                    <Select
+                      value={setting.group}
+                      onChange={(value) => handleChange("group", value)}
+                      className="w-full !h-10"
+                    >
+                      <Option value="no">Tidak</Option>
+                      <Option value="yes">Ya</Option>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">Sortir</label>
+                    <Select
+                      value={setting.sort}
+                      onChange={(value) => handleChange("sort", value)}
+                      className="w-full !h-10"
+                    >
+                      <Option value="all">Semua</Option>
+                      <Option value="office">Office</Option>
+                      <Option value="area">Area</Option>
+                    </Select>
+                  </div>
+                </>
               )}
 
               {/* Tombol aksi */}

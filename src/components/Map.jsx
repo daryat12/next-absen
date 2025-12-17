@@ -76,6 +76,7 @@ function ClusterIcon({ count, color }) {
 
 function ClusterLayer({
   locations,
+  clusterSort,
   searchMarker,
   onSearchMarker,
   flyToMarker,
@@ -97,19 +98,33 @@ function ClusterLayer({
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
+  const getGroupKey = (loc) => {
+    if (clusterSort === "area") return loc.area || "UNKNOWN";
+    if (clusterSort === "office") return loc.office || "UNKNOWN";
+    return "ALL";
+  };
+
+  const getGroupColor = (loc) => {
+    if (clusterSort === "area") return loc.areaColor || "#ff0000";
+    if (clusterSort === "office") return loc.officeColor || "#ff0000";
+    return loc.officeColor || "#ff0000";
+  };
+
   useEffect(() => {
     if (!map || !locations?.length) return;
 
     const grouped = {};
     locations.forEach((loc) => {
-      if (!grouped[loc.office]) grouped[loc.office] = [];
-      grouped[loc.office].push(loc);
+      const key = getGroupKey(loc);
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(loc);
     });
 
     const clusterGroups = [];
 
-    Object.keys(grouped).forEach((officeName) => {
-      const groupColor = grouped[officeName][0].colorMarker || "#ff0000";
+    Object.keys(grouped).forEach((groupKey) => {
+      const firstLoc = grouped[groupKey][0];
+      const groupColor = getGroupColor(firstLoc);
 
       const cluster = L.markerClusterGroup({
         showCoverageOnHover: false,
@@ -128,7 +143,7 @@ function ClusterLayer({
         },
       });
 
-      grouped[officeName].forEach((loc) => {
+      grouped[groupKey].forEach((loc) => {
         let hide = false;
 
         if (searchMarker) {
@@ -151,7 +166,7 @@ function ClusterLayer({
         const iconHtml = ReactDOMServer.renderToString(
           <div
             style={{
-              color: loc.colorMarker || "#ff0000",
+              color: loc.officeColor || "#ff0000",
               fontSize: "30px",
               lineHeight: 0,
               display: "flex",
@@ -315,6 +330,7 @@ const Map = forwardRef(
       center = [],
       userLocation = null,
       cluster = true,
+      clusterSort = "all",
       layer = "default",
       searchMarker = null,
       onSelectLocation,
@@ -344,6 +360,12 @@ const Map = forwardRef(
     useEffect(() => {
       setCurrentUserLocation(userLocation);
     }, [userLocation]);
+
+    const getMarkerColor = (loc) => {
+      if (clusterSort === "area") return loc.areaColor || "#ff0000";
+      if (clusterSort === "office") return loc.officeColor || "#ff0000";
+      return loc.officeColor || "#ff0000";
+    };
 
     const flyToMarker = (lat, lng, zoom = 18, duration = 1, offset = 0) => {
       const map = mapRef.current?._map || mapRef.current;
@@ -397,6 +419,7 @@ const Map = forwardRef(
               {cluster ? (
                 <ClusterLayer
                   locations={locations}
+                  clusterSort={clusterSort}
                   searchMarker={searchMarker}
                   onSearchMarker={onSearchMarker}
                   flyToMarker={flyToMarker}
@@ -421,7 +444,7 @@ const Map = forwardRef(
                           html: ReactDOMServer.renderToString(
                             <div
                               style={{
-                                color: loc.colorMarker || "#ff0000",
+                                color: getMarkerColor(loc),
                                 fontSize: "32px", // kontrol ukuran marker (setara 1em)
                                 lineHeight: 0,
                               }}
