@@ -166,7 +166,7 @@ function ClusterLayer({
         const iconHtml = ReactDOMServer.renderToString(
           <div
             style={{
-              color: loc.officeColor || "#ff0000",
+              color: groupColor,
               fontSize: "30px",
               lineHeight: 0,
               display: "flex",
