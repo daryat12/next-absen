@@ -740,12 +740,12 @@ export default function LocationPage() {
               {/* Kelompokan hanya ditampilkan jika location = all */}
               {setting.location === "all" && (
                 <>
-                  <div>
+                  <div className="hidden">
                     <label className="block font-medium mb-1">Kelompokan</label>
                     <Select
                       value={setting.group}
                       onChange={(value) => handleChange("group", value)}
-                      className="!hidden w-full !h-10"
+                      className="w-full !h-10"
                     >
                       <Option value="no">Tidak</Option>
                       <Option value="yes">Ya</Option>
