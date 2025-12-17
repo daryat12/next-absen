@@ -726,7 +726,7 @@ export default function LocationPage() {
 
                     // Jika hide, otomatis set group ke "no"
                     if (value === "hide") {
-                      handleChange("group", "no");
+                      handleChange("group", "yes");
                       handleChange("sort", "all");
                     }
                   }}
@@ -745,7 +745,7 @@ export default function LocationPage() {
                     <Select
                       value={setting.group}
                       onChange={(value) => handleChange("group", value)}
-                      className="w-full !h-10"
+                      className="!hidden w-full !h-10"
                     >
                       <Option value="no">Tidak</Option>
                       <Option value="yes">Ya</Option>
