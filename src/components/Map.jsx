@@ -129,8 +129,8 @@ function ClusterLayer({
       const cluster = L.markerClusterGroup({
         showCoverageOnHover: false,
         spiderfyOnMaxZoom: true,
-        disableClusteringAtZoom: 18,
-        maxClusterRadius: 60,
+        // disableClusteringAtZoom: 18,
+        // maxClusterRadius: 60,
         iconCreateFunction: (cluster) => {
           const count = cluster.getChildCount();
           return L.divIcon({
