@@ -439,7 +439,7 @@ export default function AttendanceListPage() {
           ) : (
             <Empty
               description="Tidak ada data kehadiran di tanggal ini"
-              className="mt-30"
+              className="!mt-30"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}

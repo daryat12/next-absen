@@ -317,7 +317,7 @@ export default function AttendancePage() {
         ) : (
           <Empty
             description="Tidak ada data kehadiran sebelumnya"
-            className="mt-5"
+            className="!mt-5"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         )}

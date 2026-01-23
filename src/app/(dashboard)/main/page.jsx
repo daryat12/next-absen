@@ -274,16 +274,15 @@ export default function MainPage() {
       icon: <ToolOutlined />,
       disable: true,
       visible: true,
-      link: "https://docs.google.com/forms/d/e/1FAIpQLSf7NCLF9IFJ3ehv45B4WKWh2Whn-WrgI6_SHgWZ32eyMe4opw/viewform?pli=1",
-      external: true,
+      link: "/repair",
     },
     {
       name: "Identifikasi",
       icon: <SearchOutlined />,
       disable: true,
       visible: true,
-      link: "https://docs.google.com/spreadsheets/d/1uDpbqk6b4YLYNC9ds9iZCUaretgE1Vx5hl9r-1JLH6Y/edit?gid=22500260#gid=22500260",
-      external: true,
+      link: "/identification",
+      external: false, //hanya untuk link external
     },
     {
       name: "Lokasi",

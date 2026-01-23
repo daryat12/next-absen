@@ -159,8 +159,8 @@ function NavBack({ isHiddenNavBack = true }) {
     "/penawaran": "Penawaran",
     "/employee-attendance": "Kehadiran",
     "/approval": "Approval",
-    "/perbaikan": "Perbaikan",
-    "/identifikasi": "Identifikasi",
+    "/repair": "Perbaikan",
+    "/identification": "Identifikasi",
     "/location": "Lokasi",
   };
 

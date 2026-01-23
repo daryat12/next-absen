@@ -385,7 +385,7 @@ export default function HistoryPage() {
           ) : (
             <Empty
               description="Tidak ada data kehadiran di bulan ini"
-              className="mt-30"
+              className="!mt-30"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}

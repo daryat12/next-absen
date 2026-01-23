@@ -31,6 +31,7 @@ function SearchBox({
   onSelectLocation,
   onResultsChange,
   onOverlayChange,
+  onDetailVisible,
   locations,
   myCoords,
 }) {
@@ -150,6 +151,7 @@ function SearchBox({
       setHasSearched(false);
       setSelected(false);
       onOverlayChange?.(false);
+      onDetailVisible?.();
     }
   }, [query]);
 
@@ -188,107 +190,107 @@ function SearchBox({
         {query && (
           <button
             type="button"
-            onClick={() => {
-              setQuery("");
-              setResults([]);
-              onResultsChange?.([]);
-              setHasSearched(false);
-              onOverlayChange?.(false);
-            }}
-            className="px-4 text-neutral-600 hover:text-blue-500 cursor-pointer transition"
+            onClick={() => setQuery("")}
+            className="pl-4 pr-6 text-neutral-600 hover:text-blue-500 cursor-pointer transition"
           >
             {loading ? <LoadingOutlined /> : <CloseOutlined />}
           </button>
         )}
       </form>
 
-      {query &&
-        hasSearched &&
-        (query.length <= 1 ? (
-          // Query terlalu pendek → tampilkan Empty
-          <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
-            <Empty
-              description="Masukkan minimal 2 karakter untuk mencari."
-              className="mt-35"
-            />
-          </div>
-        ) : results.length > 0 ? (
-          // Tampilkan hasil pencarian
-          <div className="absolute top-15 w-full bg-white pb-3 text-left select-none">
-            <span className="block text-xs font-semibold py-4 pl-6 pr-4">
-              Hasil Pencarian
-            </span>
-
-            <div className="max-h-[74vh] overflow-y-auto">
-              <ul className="w-full text-sm mb-10">
-                {results.map((item, idx) => (
-                  <li
-                    key={idx}
-                    onClick={() => {
-                      onSelectLocation(item);
-                      setSelected(true);
-                      onOverlayChange?.(false);
-                      setHasSearched(false);
-                      setResults([]);
-                      setQuery(
-                        item.display_name.split(",")[0]?.toUpperCase().trim()
-                      );
-                    }}
-                    className="hover:bg-gray-100 cursor-pointer w-full"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex flex-col justify-center gap-1 ml-4 w-12 items-center">
-                        <div className="bg-gray-200 p-1 flex justify-center items-center w-7 h-7 rounded-full">
-                          <PlaceOutlinedIcon className="!h-5 !w-5" />
-                        </div>
-                        <span className="text-[11px] text-gray-400">
-                          {item.distanceKm && item.distanceKm <= 101
-                            ? item.distanceKm < 1
-                              ? Math.round(item.distanceKm * 1000) + " m"
-                              : item.distanceKm.toFixed(1) + " km"
-                            : ""}
-                        </span>
-                      </div>
-
-                      <div
-                        className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-5 pr-4 
-                        ${
-                          idx < results.length - 1 && "border-b border-gray-200"
-                        }`}
-                      >
-                        <div className="flex flex-col max-w-[97%]">
-                          <span className="font-semibold truncate">
-                            {item.display_name
-                              .split(",")[0]
-                              ?.toUpperCase()
-                              .trim()}
-                          </span>
-
-                          <span className="text-xs text-gray-400 truncate">
-                            {item.display_name
-                              .replace(
-                                item.display_name.split(",")[0] + ",",
-                                ""
-                              )
-                              .trim()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      {hasSearched && (
+        <>
+          {/* QUERY TERLALU PENDEK */}
+          {(!query || query.length < 2) && (
+            <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
+              <Empty
+                description="Masukkan minimal 2 karakter untuk mencari."
+                className="mt-35"
+              />
             </div>
-          </div>
-        ) : (
-          // Tidak ada hasil
-          <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
-            <Empty
-              description="Data yang anda cari tidak ditemukan."
-              className="mt-35"
-            />
-          </div>
-        ))}
+          )}
+
+          {/* HASIL PENCARIAN */}
+          {query?.length >= 2 && results?.length > 0 && (
+            <div className="absolute top-15 w-full bg-white pb-3 text-left select-none">
+              <span className="block text-xs font-semibold py-4 pl-6 pr-4">
+                Hasil Pencarian
+              </span>
+
+              <div className="max-h-[74vh] overflow-y-auto">
+                <ul className="w-full text-sm mb-10">
+                  {results.map((item, idx) => (
+                    <li
+                      key={idx}
+                      onClick={() => {
+                        onSelectLocation(item);
+                        setSelected(true);
+                        onOverlayChange?.(false);
+                        setHasSearched(false);
+                        setResults([]);
+                        setQuery(
+                          item.display_name.split(",")[0]?.toUpperCase().trim()
+                        );
+                      }}
+                      className="hover:bg-gray-100 cursor-pointer w-full"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex flex-col justify-center gap-1 ml-4 w-12 items-center">
+                          <div className="bg-gray-200 p-1 flex justify-center items-center w-7 h-7 rounded-full">
+                            <PlaceOutlinedIcon className="!h-5 !w-5" />
+                          </div>
+
+                          <span className="text-[11px] text-gray-400">
+                            {item.distanceKm && item.distanceKm <= 101
+                              ? item.distanceKm < 1
+                                ? Math.round(item.distanceKm * 1000) + " m"
+                                : item.distanceKm.toFixed(1) + " km"
+                              : ""}
+                          </span>
+                        </div>
+
+                        <div
+                          className={`flex flex-1 items-center justify-between max-w-[83%] ml-2 py-5 pr-4 
+                      ${idx < results.length - 1 && "border-b border-gray-200"}
+                    `}
+                        >
+                          <div className="flex flex-col max-w-[97%]">
+                            <span className="font-semibold truncate">
+                              {item.display_name
+                                .split(",")[0]
+                                ?.toUpperCase()
+                                .trim()}
+                            </span>
+
+                            <span className="text-xs text-gray-400 truncate">
+                              {item.display_name
+                                .replace(
+                                  item.display_name.split(",")[0] + ",",
+                                  ""
+                                )
+                                .trim()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* HASIL KOSONG */}
+          {query?.length >= 2 && results?.length === 0 && (
+            <div className="absolute top-18 w-full flex justify-center bg-white pb-3 h-[80vh] overflow-y-auto text-left text-sm select-none">
+              <Empty
+                description="Data yang anda cari tidak ditemukan."
+                className="mt-35"
+              />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -636,6 +638,7 @@ export default function LocationPage() {
         }}
         onResultsChange={(res) => setResults(res)}
         onOverlayChange={(val) => setShowSearchOverlay(val)}
+        onDetailVisible={() => setIsDetailVisible(false)}
       />
 
       {showSearchOverlay && (

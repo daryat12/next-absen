@@ -537,7 +537,7 @@ export default function ApprovalPage() {
           ) : (
             <Empty
               description="Tidak ada data kehadiran yang menunggu persetujuan"
-              className="mt-30"
+              className="!mt-30"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}
