@@ -218,7 +218,7 @@ export default function RepairPage() {
       <div className="h-20" />
       <div className="w-full fixed md:absolute top-12 py-5">
         {alertConfig.show && (
-          <div className="w-full px-6 absolute top-6 z-20">
+          <div className="w-full px-6 absolute top-6 z-50">
             <Alert
               message={alertConfig.message}
               type={alertConfig.type}
