@@ -58,7 +58,6 @@ export default function CheckDetail() {
   const [percent, setPercent] = useState(-50);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalDescription, setModalDescription] = useState("");
 
   const showAlert = (type, message, duration = 5000) => {
     setAlertConfig({ show: true, type, message });
