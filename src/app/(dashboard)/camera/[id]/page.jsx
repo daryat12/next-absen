@@ -56,6 +56,9 @@ export default function CheckDetail() {
     message: "",
   });
   const [percent, setPercent] = useState(-50);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDescription, setModalDescription] = useState("");
 
   const showAlert = (type, message, duration = 5000) => {
     setAlertConfig({ show: true, type, message });
@@ -548,6 +551,11 @@ export default function CheckDetail() {
     startCamera(facingMode);
     scrollToBottom();
 
+    setModalTitle(
+      "Bila terjadi error atau absen tidak masuk di histori, silahkan hubungi PIC atau SPV anda di kantor."
+    );
+    setIsModalOpen(true);
+
     return () => {
       // Bersihkan referensi saat komponen di-unmount
       shutterAudioRef.current = null;
@@ -576,253 +584,280 @@ export default function CheckDetail() {
   }, [percent]);
 
   return (
-    <div className="relative flex justify-center w-full h-full bg-black overflow-hidden">
-      <div className="relative w-full h-full sm:aspect-[9/16] sm:w-auto overflow-hidden">
-        {error && (
-          <div className="bg-black absolute top-0 h-full w-full z-[1000] flex justify-center items-center text-white text-xs select-none">
-            {error}
-          </div>
-        )}
-        {isLoading && (
-          <div className="bg-black/50 absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
-            <div className="flex flex-col gap-2 justify-center items-center">
-              <Spin percent={percent} className="spin-white" />
-              <span>Sedang memproses data...</span>
+    <>
+      <div className="relative flex justify-center w-full h-full bg-black overflow-hidden">
+        <div className="relative w-full h-full sm:aspect-[9/16] sm:w-auto overflow-hidden">
+          {error && (
+            <div className="bg-black absolute top-0 h-full w-full z-[1000] flex justify-center items-center text-white text-xs select-none">
+              {error}
             </div>
-          </div>
-        )}
-        <div
-          ref={captureRef}
-          className={`relative w-full h-screen overflow-hidden text-white bg-black duration-200 ${
-            cameraReady ? "blur-0 opacity-100" : "blur-sm opacity-30"
-          }`}
-        >
-          {/* Video kamera */}
-          <motion.video
-            key={videoKey}
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute top-0 left-1/2 -translate-x-1/2 h-full object-cover aspect-[9/16] w-auto"
-            style={videoStyle}
-          />
+          )}
+          {isLoading && (
+            <div className="bg-black/50 absolute top-0 h-full w-full z-[1000] flex flex-col gap-4 justify-center items-center text-white text-xs select-none">
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <Spin percent={percent} className="spin-white" />
+                <span>Sedang memproses data...</span>
+              </div>
+            </div>
+          )}
+          <div
+            ref={captureRef}
+            className={`relative w-full h-screen overflow-hidden text-white bg-black duration-200 ${
+              cameraReady ? "blur-0 opacity-100" : "blur-sm opacity-30"
+            }`}
+          >
+            {/* Video kamera */}
+            <motion.video
+              key={videoKey}
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute top-0 left-1/2 -translate-x-1/2 h-full object-cover aspect-[9/16] w-auto"
+              style={videoStyle}
+            />
 
-          {/* Overlay mirip Timemark */}
-          <div className="absolute bottom-25 w-3/4 left-4 font-sans select-none text-white z-10">
-            {/* Header: Nama Halaman + Jam */}
-            <div className="flex items-center">
-              <div className="flex items-center mb-3 rounded-lg px-2 py-1 bg-white">
-                <div
-                  className={`px-3 py-1 rounded-md font-bold uppercase text-lg text-white ${
-                    colorMap[id] || "bg-black"
-                  }`}
-                >
-                  {namaHalaman}
-                </div>
-                {id !== "set" ? (
-                  <Timer time={time} />
-                ) : (
-                  <div className="pl-3 pr-2 py-1 text-2xl font-bold text-black">
-                    MESIN
+            {/* Overlay mirip Timemark */}
+            <div className="absolute bottom-25 w-3/4 left-4 font-sans select-none text-white z-10">
+              {/* Header: Nama Halaman + Jam */}
+              <div className="flex items-center">
+                <div className="flex items-center mb-3 rounded-lg px-2 py-1 bg-white">
+                  <div
+                    className={`px-3 py-1 rounded-md font-bold uppercase text-lg text-white ${
+                      colorMap[id] || "bg-black"
+                    }`}
+                  >
+                    {namaHalaman}
                   </div>
+                  {id !== "set" ? (
+                    <Timer time={time} />
+                  ) : (
+                    <div className="pl-3 pr-2 py-1 text-2xl font-bold text-black">
+                      MESIN
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div
+                className={`w-full border-l-4 pl-2 pr-10 text-xs ${
+                  colorMapBorder[id] || "border-black"
+                }`}
+              >
+                {/* Tanggal */}
+                {id !== "set" && (
+                  <p className="text-[12pt] mb-1 font-semibold text-shadow-md">
+                    {dateNow}
+                  </p>
+                )}
+
+                {/* Alamat */}
+                <p className="leading-snug text-shadow-md">
+                  {locError
+                    ? locError // jika ada error, tampilkan error
+                    : address
+                    ? address // jika address sudah ada dan tidak ada error, tampilkan address
+                    : "Mendeteksi alamat..."}
+                </p>
+
+                {/* Koordinat */}
+                {!locError && coords && (
+                  <p className="mt-1 text-shadow-md">
+                    {coords.lat.toFixed(6)}°, {coords.lng.toFixed(6)}°
+                  </p>
                 )}
               </div>
             </div>
 
-            <div
-              className={`w-full border-l-4 pl-2 pr-10 text-xs ${
-                colorMapBorder[id] || "border-black"
-              }`}
-            >
-              {/* Tanggal */}
-              {id !== "set" && (
-                <p className="text-[12pt] mb-1 font-semibold text-shadow-md">
-                  {dateNow}
-                </p>
-              )}
-
-              {/* Alamat */}
-              <p className="leading-snug text-shadow-md">
-                {locError
-                  ? locError // jika ada error, tampilkan error
-                  : address
-                  ? address // jika address sudah ada dan tidak ada error, tampilkan address
-                  : "Mendeteksi alamat..."}
-              </p>
-
-              {/* Koordinat */}
-              {!locError && coords && (
-                <p className="mt-1 text-shadow-md">
-                  {coords.lat.toFixed(6)}°, {coords.lng.toFixed(6)}°
-                </p>
-              )}
+            {/* Logo watermark */}
+            <div className="absolute top-0 left-0 flex items-center w-full h-full z-10 transform text-xs select-none opacity-50 px-4">
+              <Image
+                src={logoWatermark}
+                alt="Logo"
+                width={500}
+                height={500}
+                priority
+                className="w-full h-auto object-contain mb-30"
+              />
             </div>
           </div>
 
-          {/* Logo watermark */}
-          <div className="absolute top-0 left-0 flex items-center w-full h-full z-10 transform text-xs select-none opacity-50 px-4">
-            <Image
-              src={logoWatermark}
-              alt="Logo"
-              width={500}
-              height={500}
-              priority
-              className="w-full h-auto object-contain mb-30"
-            />
+          <div className="absolute grid grid-cols-3 gap-4 place-items-center items-end bottom-5 w-full text-xl text-white z-20">
+            <button
+              onClick={() => {
+                stopCamera();
+                router.back();
+              }}
+              className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+            >
+              <CloseOutlined />
+            </button>
+            <button
+              onClick={takePhoto}
+              className="relative top-2 w-20 h-20 flex items-center justify-center rounded-full text-3xl bg-red-600 hover:bg-red-700 active:scale-95 border-[6px] border-white/10 cursor-pointer text-white"
+            >
+              <CameraOutlined />
+            </button>
+            <button
+              onClick={flipCamera}
+              className="hidden flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+            >
+              <SwapOutlined />
+            </button>
           </div>
-        </div>
 
-        <div className="absolute grid grid-cols-3 gap-4 place-items-center items-end bottom-5 w-full text-xl text-white z-20">
-          <button
-            onClick={() => {
-              stopCamera();
-              router.back();
+          {/* Alert jika gagal lokasi */}
+          {alertConfig.show && (
+            <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50">
+              <Alert
+                message={alertConfig.message}
+                type={alertConfig.type}
+                showIcon
+                closable
+                className="w-[350px] shadow-md"
+              />
+            </div>
+          )}
+
+          {/* Preview hasil foto */}
+          {photo && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
+              <img
+                src={photo}
+                alt="Preview"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-auto h-full object-cover aspect-[9/16]"
+              />
+              {!isLoading && !alertConfig.show && !isDetailVisible && (
+                <div className="absolute bottom-5 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
+                  <button
+                    onClick={reTakePhoto}
+                    className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+                  >
+                    <ReloadOutlined />
+                  </button>
+                  <button
+                    onClick={savePhoto}
+                    className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-green-500/30 hover:bg-green-500/50 border-2 border-green-500 text-green-500"
+                  >
+                    <CheckOutlined />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <BottomPopup
+            open={isDetailVisible}
+            onClose={() => {
+              reTakePhoto();
+              setIsDetailVisible(false);
             }}
-            className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+            title="Set Lokasi Mesin"
+            dragDistance={false}
           >
-            <CloseOutlined />
-          </button>
-          <button
-            onClick={takePhoto}
-            className="relative top-2 w-20 h-20 flex items-center justify-center rounded-full text-3xl bg-red-600 hover:bg-red-700 active:scale-95 border-[6px] border-white/10 cursor-pointer text-white"
-          >
-            <CameraOutlined />
-          </button>
-          <button
-            onClick={flipCamera}
-            className="hidden flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
-          >
-            <SwapOutlined />
-          </button>
-        </div>
+            <Form
+              layout="vertical"
+              onFinish={savePinLokasi}
+              initialValues={{
+                address: saveAddress,
+                coords: `${saveCoords?.lat},${saveCoords?.lng}`,
+              }}
+            >
+              <Form.Item
+                label="Serial"
+                name="serial"
+                rules={[{ required: true, message: false }]}
+                className="!mb-3"
+              >
+                <Input
+                  placeholder="Masukkan nomor serial mesin"
+                  className="!py-2"
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\s+/g, "")
+                      .toUpperCase();
+                    e.target.value = value;
+                  }}
+                />
+              </Form.Item>
 
-        {/* Alert jika gagal lokasi */}
-        {alertConfig.show && (
-          <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50">
-            <Alert
-              message={alertConfig.message}
-              type={alertConfig.type}
-              showIcon
-              closable
-              className="w-[350px] shadow-md"
-            />
-          </div>
-        )}
+              <Form.Item
+                label="Nama Pelanggan"
+                name="cust_name"
+                rules={[{ required: true, message: false }]}
+                className="!mb-3"
+              >
+                <Input
+                  placeholder="Masukkan nama pelanggan"
+                  className="!py-2"
+                />
+              </Form.Item>
+              <Form.Item
+                label="Gedung"
+                name="building"
+                rules={[{ required: false, message: false }]}
+                className="!mb-3"
+              >
+                <Input placeholder="Masukkan nama gedung" className="!py-2" />
+              </Form.Item>
 
-        {/* Preview hasil foto */}
-        {photo && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
-            <img
-              src={photo}
-              alt="Preview"
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-auto h-full object-cover aspect-[9/16]"
-            />
-            {!isLoading && !alertConfig.show && !isDetailVisible && (
-              <div className="absolute bottom-5 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
+              <Form.Item
+                label="Alamat"
+                name="address"
+                rules={[{ required: true, message: false }]}
+                className="!mb-3"
+              >
+                <Input.TextArea
+                  placeholder="Masukkan alamat lengkap"
+                  rows={4}
+                />
+              </Form.Item>
+
+              <Form.Item name="coords">
+                <Input type="hidden" />
+              </Form.Item>
+
+              <div className="flex justify-end gap-2 mt-4">
                 <button
-                  onClick={reTakePhoto}
-                  className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+                  type="button"
+                  onClick={() => {
+                    reTakePhoto();
+                    setIsDetailVisible(false);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer"
                 >
-                  <ReloadOutlined />
+                  Batal
                 </button>
                 <button
-                  onClick={savePhoto}
-                  className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-green-500/30 hover:bg-green-500/50 border-2 border-green-500 text-green-500"
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
                 >
-                  <CheckOutlined />
+                  Simpan
                 </button>
               </div>
-            )}
-          </div>
-        )}
-
-        <BottomPopup
-          open={isDetailVisible}
-          onClose={() => {
-            reTakePhoto();
-            setIsDetailVisible(false);
-          }}
-          title="Set Lokasi Mesin"
-          dragDistance={false}
-        >
-          <Form
-            layout="vertical"
-            onFinish={savePinLokasi}
-            initialValues={{
-              address: saveAddress,
-              coords: `${saveCoords?.lat},${saveCoords?.lng}`,
-            }}
-          >
-            <Form.Item
-              label="Serial"
-              name="serial"
-              rules={[{ required: true, message: false }]}
-              className="!mb-3"
-            >
-              <Input
-                placeholder="Masukkan nomor serial mesin"
-                className="!py-2"
-                onChange={(e) => {
-                  const value = e.target.value
-                    .replace(/\s+/g, "")
-                    .toUpperCase();
-                  e.target.value = value;
-                }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Nama Pelanggan"
-              name="cust_name"
-              rules={[{ required: true, message: false }]}
-              className="!mb-3"
-            >
-              <Input placeholder="Masukkan nama pelanggan" className="!py-2" />
-            </Form.Item>
-            <Form.Item
-              label="Gedung"
-              name="building"
-              rules={[{ required: false, message: false }]}
-              className="!mb-3"
-            >
-              <Input placeholder="Masukkan nama gedung" className="!py-2" />
-            </Form.Item>
-
-            <Form.Item
-              label="Alamat"
-              name="address"
-              rules={[{ required: true, message: false }]}
-              className="!mb-3"
-            >
-              <Input.TextArea placeholder="Masukkan alamat lengkap" rows={4} />
-            </Form.Item>
-
-            <Form.Item name="coords">
-              <Input type="hidden" />
-            </Form.Item>
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  reTakePhoto();
-                  setIsDetailVisible(false);
-                }}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-              >
-                Simpan
-              </button>
-            </div>
-          </Form>
-        </BottomPopup>
+            </Form>
+          </BottomPopup>
+        </div>
       </div>
-    </div>
+      <Modal
+        open={isModalOpen}
+        title={<h1 className="text-2xl">Pemberitahuan!</h1>}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null} // custom footer
+        className="text-center"
+      >
+        <p className="my-10">
+          <strong className="text-red-500 text-[13.2pt]">{modalTitle}</strong>
+        </p>
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            className="w-30 py-2 bg-blue-400 rounded-lg hover:bg-blue-500 cursor-pointer"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Mengerti
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }

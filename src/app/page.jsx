@@ -33,7 +33,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setLogVisible(true);
+    // setLogVisible(true);
     const user = localStorage.getItem("user");
     if (user) {
       router.replace("/main");
