@@ -553,7 +553,8 @@ export default function CheckDetail() {
     setModalTitle(
       "Bila terjadi error atau absen tidak masuk di histori, silahkan hubungi PIC atau SPV anda di kantor."
     );
-    setIsModalOpen(true);
+
+    if (!error) setIsModalOpen(true);
 
     return () => {
       // Bersihkan referensi saat komponen di-unmount
