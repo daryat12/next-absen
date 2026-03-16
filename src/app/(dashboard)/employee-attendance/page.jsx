@@ -291,7 +291,9 @@ export default function AttendanceListPage() {
       checkIn: item.scan_masuk,
       checkOut: item.scan_keluar,
       status:
-        item.status_approved === null || item.status_approved === "0"
+        item.status_approved === null
+          ? "undefined"
+          : item.status_approved === "0"
           ? "waiting"
           : "approved",
       detail: {
@@ -418,6 +420,10 @@ export default function AttendanceListPage() {
                     <Tag color="green" className="!mr-0">
                       Approved
                     </Tag>
+                  ) : item.status === "undefined" ? (
+                    <Tag color="red" className="!mr-0">
+                      Undefined
+                    </Tag>
                   ) : (
                     <Tag color="orange" className="!mr-0">
                       Waiting
@@ -504,6 +510,8 @@ export default function AttendanceListPage() {
                     <span className="inline-block w-25">Status</span>:{" "}
                     {selectedRecord.status === "approved" ? (
                       <Tag color="green">Approved</Tag>
+                    ) : selectedRecord.status === "undefined" ? (
+                      <Tag color="red">Undefined</Tag>
                     ) : (
                       <Tag color="orange">Waiting</Tag>
                     )}
@@ -601,6 +609,7 @@ export default function AttendanceListPage() {
                 <Option value="all">Semua</Option>
                 <Option value="approved">Approved</Option>
                 <Option value="waiting">Waiting</Option>
+                <Option value="undefined">Undefined</Option>
               </Select>
             </div>
 
