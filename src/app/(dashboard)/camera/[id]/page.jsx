@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Form, Input, Alert, Spin } from "antd";
+import { Form, Input, Alert, Spin, Modal } from "antd";
 import { snapdom } from "@zumer/snapdom";
 import {
   CameraOutlined,
