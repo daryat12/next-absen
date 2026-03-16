@@ -551,10 +551,10 @@ export default function CheckDetail() {
     scrollToBottom();
 
     setModalTitle(
-      "Bila terjadi error atau absen tidak masuk di histori, silahkan hubungi PIC atau SPV anda di kantor."
+      "Bila terjadi error atau data tidak masuk, silahkan hubungi PIC atau SPV anda di kantor."
     );
 
-    if (!error) setIsModalOpen(true);
+    setIsModalOpen(true);
 
     return () => {
       // Bersihkan referensi saat komponen di-unmount
@@ -851,7 +851,7 @@ export default function CheckDetail() {
         </p>
         <div className="flex justify-center gap-3 mt-4">
           <button
-            className="w-30 py-2 bg-blue-400 rounded-lg hover:bg-blue-500 cursor-pointer"
+            className="w-30 py-2 bg-blue-400 rounded-lg hover:bg-blue-500 text-white cursor-pointer"
             onClick={() => setIsModalOpen(false)}
           >
             Mengerti
