@@ -413,7 +413,13 @@ export default function AttendanceListPage() {
                 className="bg-white border border-gray-300 rounded-2xl p-4 cursor-pointer transition transform hover:border-blue-500 active:border-blue-500"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-base font-semibold text-blue-500">
+                  <h2
+                    className={`text-base font-semibold ${
+                      item.status === "undefined"
+                        ? "text-red-400"
+                        : "text-blue-500"
+                    }`}
+                  >
                     {item.name}
                   </h2>
                   {item.status === "approved" ? (
