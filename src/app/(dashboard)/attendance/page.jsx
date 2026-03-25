@@ -61,6 +61,22 @@ function Card({ userData }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalDescription, setModalDescription] = useState("");
+  const [isCheckoutDisabled, setIsCheckoutDisabled] = useState(true);
+
+  useEffect(() => {
+    const updateStatus = () => {
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const LIMIT_TIME = 10 * 60 + 30;
+
+      setIsCheckoutDisabled(currentTime < LIMIT_TIME);
+    };
+
+    updateStatus(); // jalankan pertama kali
+
+    const interval = setInterval(updateStatus, 1000); // tiap detik (real-time)
+    return () => clearInterval(interval);
+  }, []);
 
   const buttons = [
     {
@@ -81,7 +97,10 @@ function Card({ userData }) {
     const isCheckIn = button.name === "Check In";
     const isCheckOut = button.name === "Check Out";
 
-    const disabled = isCheckIn && userData?.scan_keluar;
+    const disabled =
+      (isCheckIn && userData?.scan_keluar) ||
+      (isCheckOut && isCheckoutDisabled);
+
     if (disabled) return;
 
     // ===========================
@@ -144,7 +163,11 @@ function Card({ userData }) {
       <div className="flex gap-4 justify-between items-center p-4">
         {buttons.map((button, index) => {
           const isCheckIn = button.name === "Check In";
-          const disabled = isCheckIn && userData?.scan_keluar;
+          const isCheckOut = button.name === "Check Out";
+
+          const disabled =
+            (isCheckIn && userData?.scan_keluar) ||
+            (isCheckOut && isCheckoutDisabled);
 
           return (
             <div
