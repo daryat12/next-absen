@@ -148,6 +148,7 @@ export default function AttendanceListPage() {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [filters, setFilters] = useState({
     name: "",
+    checkInStatus: "all",
     checkOutStatus: "all",
     status: "all",
   });
@@ -326,6 +327,14 @@ export default function AttendanceListPage() {
         .toLowerCase()
         .includes(filters.name.toLowerCase());
 
+      const hasCheckIn = item.checkIn && item.checkIn.trim() !== "";
+      const matchCheckIn =
+        filters.checkInStatus === "all"
+          ? true
+          : filters.checkInStatus === "absen"
+          ? hasCheckIn
+          : !hasCheckIn;
+
       const hasCheckOut = item.checkOut && item.checkOut.trim() !== "";
       const matchCheckOut =
         filters.checkOutStatus === "all"
@@ -337,7 +346,7 @@ export default function AttendanceListPage() {
       const matchStatus =
         filters.status === "all" ? true : item.status === filters.status;
 
-      return matchName && matchCheckOut && matchStatus;
+      return matchName && matchCheckIn && matchCheckOut && matchStatus;
     });
 
   const formatTime = (timeString) => {
@@ -354,12 +363,14 @@ export default function AttendanceListPage() {
   };
   const isFilterActive =
     filters.name !== "" ||
+    filters.checkInStatus !== "all" ||
     filters.checkOutStatus !== "all" ||
     filters.status !== "all";
 
   const resetFilter = () => {
     setTempFilters({
       name: "",
+      checkInStatus: "all",
       checkOutStatus: "all",
       status: "all",
     });
@@ -586,6 +597,21 @@ export default function AttendanceListPage() {
                 }
                 className="h-10"
               />
+            </div>
+
+            <div>
+              <label className="block font-medium mb-1">Absen Masuk</label>
+              <Select
+                className="w-full !h-10"
+                value={tempFilters.checkInStatus}
+                onChange={(value) =>
+                  setTempFilters({ ...tempFilters, checkInStatus: value })
+                }
+              >
+                <Option value="all">Semua</Option>
+                <Option value="absen">Absen (Jam masuk terisi)</Option>
+                <Option value="tidak">Tidak (Jam masuk kosong)</Option>
+              </Select>
             </div>
 
             <div>

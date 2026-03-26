@@ -132,13 +132,11 @@ export default function CheckDetail() {
       const result = await response.json();
 
       if (result.status) {
-        setIsLoading(false);
         showAlert("success", result.message);
         // reset state setelah upload
         setSaveCoords(null);
         setSaveAddress(null);
         setSaveTime(defaultTime);
-        enableBack();
         setTimeout(() => {
           router.back();
           setPhoto(null);
@@ -146,6 +144,8 @@ export default function CheckDetail() {
       } else {
         showAlert("error", result.message || "Gagal menyimpan data!");
       }
+      setIsLoading(false);
+      enableBack();
     } catch (error) {
       if (error === "timeout") {
         showAlert(
@@ -731,7 +731,7 @@ export default function CheckDetail() {
                 <div className="absolute bottom-5 w-full grid grid-cols-2 place-items-center px-10 items-center text-xl text-white">
                   <button
                     onClick={reTakePhoto}
-                    className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-white/30 hover:bg-white/50 border-2 border-white"
+                    className="flex items-center justify-center aspect-square w-15 cursor-pointer rounded-full bg-black/30 hover:bg-black/50 border-2 border-white"
                   >
                     <ReloadOutlined />
                   </button>
