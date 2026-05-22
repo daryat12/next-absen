@@ -605,9 +605,16 @@ export default function TiketPage() {
                                     <h2 className="text-base font-semibold text-slate-500">
                                         {item.kategori_}
                                     </h2>
-                                    <Tag color="orange" className="!mr-0">
+
+                                    {item?.status != ''
+                                        ? <Tag color="orange" className="!mr-0">
+                                            {item.status}
+                                        </Tag>
+                                        : ''
+                                    }
+                                    {/* <Tag color="orange" className="!mr-0">
                                         {item.status}
-                                    </Tag>
+                                    </Tag> */}
                                 </div>
                                 <div className="flex justify-center items-center py-2 border rounded mb-2 border-blue-500">
                                     <h2 className="text-base font-bold text-blue-500">TIKET # {item.no_tiket}</h2>
