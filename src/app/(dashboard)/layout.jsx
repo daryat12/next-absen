@@ -162,6 +162,7 @@ function NavBack({ isHiddenNavBack = true }) {
     "/repair": "Perbaikan",
     "/identification": "Identifikasi",
     "/location": "Lokasi",
+    "/tiket": "Tiket",
   };
 
   if (isHiddenNavBack) return null;
@@ -222,57 +223,51 @@ function FooterMenu({ isHiddenFooter = true }) {
                 <Link
                   key={index}
                   href={menu.link}
-                  className={`flex flex-col items-center justify-center text-xs transition-all duration-200 ${
-                    index === 1
+                  className={`flex flex-col items-center justify-center text-xs transition-all duration-200 ${index === 1
                       ? "relative -top-5"
                       : isActive
-                      ? "text-blue-600"
-                      : "text-neutral-600 hover:text-blue-500"
-                  }`}
+                        ? "text-blue-600"
+                        : "text-neutral-600 hover:text-blue-500"
+                    }`}
                 >
                   {index === 1 ? (
                     <div className="flex flex-col items-center">
                       <div
-                        className={`aspect-square w-16 rounded-full flex items-center justify-center text-2xl cursor-pointer transition text-white ${
-                          isActive
+                        className={`aspect-square w-16 rounded-full flex items-center justify-center text-2xl cursor-pointer transition text-white ${isActive
                             ? "bg-blue-600"
                             : "bg-[#12549a] hover:bg-blue-600"
-                        }`}
+                          }`}
                       >
                         <div className={`${!isActive ? "animate-pulse" : ""}`}>
                           {menu.icon}
                         </div>
                       </div>
                       <span
-                        className={`font-medium relative top-1 ${
-                          isActive ? "text-blue-600" : ""
-                        }`}
+                        className={`font-medium relative top-1 ${isActive ? "text-blue-600" : ""
+                          }`}
                       >
                         {menu.name}
                       </span>
                     </div>
                   ) : (
                     <div
-                      className={`h-full w-30 flex flex-col items-center ${
-                        isActive
+                      className={`h-full w-30 flex flex-col items-center ${isActive
                           ? "bg-gradient-to-b from-[#12549a]/20 to-transparent"
                           : "pt-[6px]"
-                      }`}
+                        }`}
                     >
                       {isActive && (
                         <div className="w-full h-1 bg-blue-600 rounded-b-full mb-[2px]" />
                       )}
                       <div
-                        className={`text-xl mb-1 cursor-pointer ${
-                          isActive ? "text-blue-600" : ""
-                        }`}
+                        className={`text-xl mb-1 cursor-pointer ${isActive ? "text-blue-600" : ""
+                          }`}
                       >
                         {menu.icon}
                       </div>
                       <span
-                        className={`font-medium ${
-                          isActive ? "text-blue-600" : ""
-                        }`}
+                        className={`font-medium ${isActive ? "text-blue-600" : ""
+                          }`}
                       >
                         {menu.name}
                       </span>

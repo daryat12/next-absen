@@ -317,7 +317,7 @@ export default function RepairPage() {
             <Form.Item
               label="Nama pelanggan"
               name="nama_pelanggan"
-              // rules={[{ required: true, message: "" }]}
+            // rules={[{ required: true, message: "" }]}
             >
               <Input placeholder="Nama pelanggan" />
             </Form.Item>

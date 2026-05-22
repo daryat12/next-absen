@@ -15,6 +15,7 @@ import {
   CheckOutlined,
   ToolOutlined,
   SearchOutlined,
+  ScheduleOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import AddLocationAltOutlinedIcon from "@mui/icons-material/AddLocationAltOutlined";
@@ -64,32 +65,32 @@ function Header({ user }) {
 
   const items = hasNotifs
     ? notif.map((row, index) => ({
-        key: String(index + 1),
-        label: (
-          <Link
-            href={row.link || "#"}
-            className="block font-semibold flex justify-between gap-1 items-center px-2 hover:bg-neutral-100 rounded-md"
-          >
-            <span>
-              {row.notif} ({row.jumlah} {row.satuan})
-            </span>
-          </Link>
-        ),
-      }))
+      key: String(index + 1),
+      label: (
+        <Link
+          href={row.link || "#"}
+          className="block font-semibold flex justify-between gap-1 items-center px-2 hover:bg-neutral-100 rounded-md"
+        >
+          <span>
+            {row.notif} ({row.jumlah} {row.satuan})
+          </span>
+        </Link>
+      ),
+    }))
     : [
-        {
-          key: "empty",
-          disabled: true,
-          label: (
-            <div className="py-3 flex justify-center">
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Tidak ada notifikasi"
-              />
-            </div>
-          ),
-        },
-      ];
+      {
+        key: "empty",
+        disabled: true,
+        label: (
+          <div className="py-3 flex justify-center">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Tidak ada notifikasi"
+            />
+          </div>
+        ),
+      },
+    ];
 
   useEffect(() => {
     if (notif.length > 0) {
@@ -285,6 +286,14 @@ export default function MainPage() {
       external: false, //hanya untuk link external
     },
     {
+      name: "Tiket",
+      icon: <ScheduleOutlined />,
+      disable: true,
+      visible: true,
+      link: "/tiket",
+      external: false, //hanya untuk link external
+    },
+    {
       name: "Lokasi",
       icon: <AddLocationAltOutlinedIcon />,
       disable: false,
@@ -319,7 +328,7 @@ export default function MainPage() {
       }
 
       // Jika user Teknisi → aktifkan Perbaikan & Identifikasi
-      if (isTeknisi && ["Perbaikan", "Identifikasi"].includes(menu.name)) {
+      if (isTeknisi && ["Perbaikan", "Identifikasi", "Tiket"].includes(menu.name)) {
         updatedMenu.visible = false;
         updatedMenu.disable = false;
       }
@@ -370,16 +379,14 @@ export default function MainPage() {
             .map((menu, index) => {
               const content = (
                 <div
-                  className={`flex flex-col items-center justify-center ${
-                    !menu.disable ? "cursor-pointer" : "cursor-not-allowed"
-                  }`}
+                  className={`flex flex-col items-center justify-center ${!menu.disable ? "cursor-pointer" : "cursor-not-allowed"
+                    }`}
                 >
                   <div
-                    className={`w-14 h-14 flex items-center justify-center rounded-full transition text-[18pt] bg-white ${
-                      !menu.disable
-                        ? "shadow-md hover:bg-blue-500 hover:text-white text-blue-500"
-                        : "text-neutral-300"
-                    }`}
+                    className={`w-14 h-14 flex items-center justify-center rounded-full transition text-[18pt] bg-white ${!menu.disable
+                      ? "shadow-md hover:bg-blue-500 hover:text-white text-blue-500"
+                      : "text-neutral-300"
+                      }`}
                   >
                     {menu.icon}
                   </div>
