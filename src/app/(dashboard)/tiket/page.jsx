@@ -50,7 +50,7 @@ export default function TiketPage() {
     };
 
     const STORAGE_KEY = "update_tiket_teknisi";
-    // Koment
+    // Koment lagi
 
     useEffect(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
