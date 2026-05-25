@@ -235,10 +235,10 @@ function Header({ user }) {
           <BellFilled className="text-xl !text-white cursor-pointer" />
         </Badge>
       </Dropdown> */}
-
       <Dropdown
         menu={{ items: dropdownItems }}
         placement="bottomRight"
+        align={{ offset: [0, -10] }}
         trigger={["click"]}
         open={dropdownVisible}
         onOpenChange={(open) => setDropdownVisible(open)}
