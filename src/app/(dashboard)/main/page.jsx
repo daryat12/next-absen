@@ -24,6 +24,7 @@ import { NewspaperOutlined as NewsIcon } from "@mui/icons-material";
 function Header({ user }) {
   const { setShowProfile } = useProfile();
   const [notif, setNotif] = useState([]);
+  const [notifTiket, setNotifTiket] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const fetchNotif = async (parsedUser) => {
@@ -57,40 +58,130 @@ function Header({ user }) {
     }
   };
 
+  const fetchNotifTiket = async (parsedUser) => {
+    try {
+      const possibleGroups = ["Super Admin", "Online Absen Check"];
+      const group =
+        possibleGroups.find((g) => parsedUser.group_name?.includes(g)) || "";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_CI_API_URL}/api/NextAbsen/getNotifTiket`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "ci-Key": process.env.NEXT_PUBLIC_CI_KEY || "",
+          },
+          body: JSON.stringify({
+            group,
+            cabang: parsedUser.alias || "",
+            username: parsedUser.username || "",
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (result.status) {
+        setNotifTiket(result.data || []);
+      } else {
+        setNotifTiket([]);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
+  };
+
   useEffect(() => {
     if (user) fetchNotif(user);
+    if (user) fetchNotifTiket(user);
   }, [user]);
 
   const hasNotifs = Array.isArray(notif) && notif.length > 0;
+  const hasNotifsTiket = Array.isArray(notifTiket) && notifTiket.length > 0;
 
-  const items = hasNotifs
-    ? notif.map((row, index) => ({
-      key: String(index + 1),
+  const allowedGroups = ["Super Admin", "Online Absen Check"];
+
+  const isAllowedGroup = allowedGroups.some((g) =>
+    user?.group_name?.includes(g)
+  );
+
+  const dropdownItems = [
+
+    ...(isAllowedGroup
+      ? [
+        {
+          key: "notif-header",
+          disabled: true,
+          label: (
+            <div className="font-bold text-blue-500 border-b pb-1">
+              Notifikasi Absen
+            </div>
+          ),
+        },
+
+        ...(hasNotifs
+          ? notif.map((row, index) => ({
+            key: `notif-${index}`,
+            label: (
+              <Link
+                href={row.link || "#"}
+                className="block font-semibold px-2 py-1 hover:bg-neutral-100 rounded-md"
+              >
+                {row.notif} ({row.jumlah} {row.satuan})
+              </Link>
+            ),
+          }))
+          : [
+            {
+              key: "notif-empty",
+              disabled: true,
+              label: (
+                <div className="text-center text-gray-400 py-2">
+                  Tidak ada notif absen
+                </div>
+              ),
+            },
+          ]),
+
+        {
+          type: "divider",
+        },
+      ]
+      : []),
+
+    {
+      key: "tiket-header",
+      disabled: true,
       label: (
-        <Link
-          href={row.link || "#"}
-          className="block font-semibold flex justify-between gap-1 items-center px-2 hover:bg-neutral-100 rounded-md"
-        >
-          <span>
-            {row.notif} ({row.jumlah} {row.satuan})
-          </span>
-        </Link>
+        <div className="font-bold text-blue-500 border-b pb-1">
+          Notifikasi Tiket
+        </div>
       ),
-    }))
-    : [
-      {
-        key: "empty",
-        disabled: true,
+    },
+
+    ...(hasNotifsTiket
+      ? notifTiket.map((row, index) => ({
+        key: `tiket-${index}`,
         label: (
-          <div className="py-3 flex justify-center">
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Tidak ada notifikasi"
-            />
-          </div>
+          <Link
+            href={row.link || "#"}
+            className="block font-semibold px-2 py-1 hover:bg-neutral-100 rounded-md"
+          >
+            {row.notif} ({row.jumlah} {row.satuan})
+          </Link>
         ),
-      },
-    ];
+      }))
+      : [
+        {
+          key: "tiket-empty",
+          disabled: true,
+          label: (
+            <div className="text-center text-gray-400 py-2">
+              Tidak ada notif tiket
+            </div>
+          ),
+        },
+      ]),
+  ];
 
   useEffect(() => {
     if (notif.length > 0) {
@@ -99,6 +190,14 @@ function Header({ user }) {
       return () => clearTimeout(timer);
     }
   }, [notif]);
+
+  useEffect(() => {
+    if (notifTiket.length > 0) {
+      setDropdownVisible(true); // buka dropdown saat load
+      const timer = setTimeout(() => setDropdownVisible(false), 10000); // tutup 10 detik
+      return () => clearTimeout(timer);
+    }
+  }, [notifTiket]);
 
   return (
     <div className="flex justify-between mb-10 px-2">
@@ -124,7 +223,7 @@ function Header({ user }) {
         </div>
       </div>
 
-      <Dropdown
+      {/* <Dropdown
         menu={{ items }}
         placement="bottomRight"
         trigger={["click"]}
@@ -133,6 +232,18 @@ function Header({ user }) {
         popupRender={(menu) => <div style={{ marginTop: "-20px" }}>{menu}</div>}
       >
         <Badge dot={hasNotifs}>
+          <BellFilled className="text-xl !text-white cursor-pointer" />
+        </Badge>
+      </Dropdown> */}
+
+      <Dropdown
+        menu={{ items: dropdownItems }}
+        placement="bottomRight"
+        trigger={["click"]}
+        open={dropdownVisible}
+        onOpenChange={(open) => setDropdownVisible(open)}
+      >
+        <Badge dot={hasNotifs || hasNotifsTiket}>
           <BellFilled className="text-xl !text-white cursor-pointer" />
         </Badge>
       </Dropdown>
