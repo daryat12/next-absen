@@ -549,6 +549,7 @@ export default function TiketPage() {
                 username: parsedUser.username,
                 name: parsedUser.name,
                 cabang: parsedUser.alias,
+                status: selectedRecord.status,
             };
             setRefreshSelesai(false);
 
