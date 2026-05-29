@@ -618,8 +618,8 @@ export default function TiketPage() {
                                     </Tag> */}
                                     {/* Tagg */}
                                 </div>
-                                <div className="flex justify-center items-center py-2 border rounded mb-2 border-blue-500">
-                                    <h2 className="text-base font-bold text-blue-500">TIKET # {item.no_tiket}</h2>
+                                <div className="flex justify-center items-center py-2 border-dashed rounded mb-2 border-blue-500">
+                                    <h2 className="text-base font-bold text-blue-500">TIKET #{item.no_tiket}</h2>
                                 </div>
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-base font-semibold text-slate-500">
@@ -717,18 +717,20 @@ export default function TiketPage() {
                                     </p>
                                     <p>
                                         <span className="inline-block w-39">Status</span>:{" "}
-                                        <Tag color="orange">{selectedRecord.status}</Tag>
+                                        {selectedRecord.status && (
+                                            <Tag color="orange">{selectedRecord.status}</Tag>
+                                        )}
                                     </p>
                                     <p>
                                         <span className="inline-block w-39">Kode Cust</span>:{" "}
                                         <strong>{selectedRecord.cust_code}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Perusahaan</span>:{" "}
+                                        <span className="inline-block w-39">Perusahaan</span>:<br/>
                                         <strong>{selectedRecord.nama_pelanggan}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Alamat / Area</span>:{" "}
+                                        <span className="inline-block w-39">Alamat / Area</span>:<br/>
                                         <strong>{selectedRecord.alamat}</strong>
                                     </p>
                                     <p>
@@ -748,8 +750,8 @@ export default function TiketPage() {
                                         <strong>{formatTanggalJam(selectedRecord)}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39 align-middle">Target Maksimal Kunjungan</span>:{" "}
-                                        <strong>{formatTargetTiket(selectedRecord)}</strong>
+                                        <span className="inline-block w-39 align-middle">Target Maks. Kunjungan</span>:{" "}
+                                        <strong class="text-red-500">{formatTargetTiket(selectedRecord)}</strong>
                                     </p>
                                     <p>
                                         <span className="inline-block w-39">User</span>:{" "}
@@ -761,11 +763,11 @@ export default function TiketPage() {
                                     </p>
                                     <p>
                                         <span className="inline-block w-39">Teknisi Asist</span>:{" "}
-                                        <strong>{selectedRecord.teknisi_asist != '' ? selectedRecord.teknisi_asist : ' - '}</strong>
+                                        <strong>{selectedRecord.teknisi_asist || '-'}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Catatan Khusus</span>:{" "}
-                                        <strong>{selectedRecord.catatan != '' ? selectedRecord.catatan : ' - '}</strong>
+                                        <span className="inline-block w-39">Catatan Khusus</span>:<br/>
+                                        <strong>{selectedRecord.catatan || '-'}</strong>
                                     </p>
                                 </div>
                             </div>
