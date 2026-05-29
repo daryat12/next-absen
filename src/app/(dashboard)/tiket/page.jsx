@@ -618,7 +618,7 @@ export default function TiketPage() {
                                     </Tag> */}
                                     {/* Tagg */}
                                 </div>
-                                <div className="flex justify-center items-center py-2 border-dashed rounded mb-2 border-blue-500">
+                                <div className="flex justify-center items-center py-2 border border-dashed rounded mb-2 border-blue-500">
                                     <h2 className="text-base font-bold text-blue-500">TIKET #{item.no_tiket}</h2>
                                 </div>
                                 <div className="flex items-center justify-between mb-2">
