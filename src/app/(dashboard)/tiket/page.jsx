@@ -26,6 +26,7 @@ export default function TiketPage() {
     const [filters, setFilters] = useState({
         nama_pelanggan: "",
     });
+    const [actionType, setActionType] = useState("");
     const [tempFilters, setTempFilters] = useState(filters);
     const [userTiket, setUserTiket] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -550,6 +551,7 @@ export default function TiketPage() {
                 name: parsedUser.name,
                 cabang: parsedUser.alias,
                 status: selectedRecord.status,
+                actionType: actionType,
             };
             setRefreshSelesai(false);
 
@@ -686,9 +688,24 @@ export default function TiketPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                                    className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                                    onClick={() => setActionType("Selesai")}
                                 >
-                                    Simpan
+                                    Selesai
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer"
+                                    onClick={() => setActionType("GP ON")}
+                                >
+                                    GP ON
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                                    onClick={() => setActionType("GP OFF")}
+                                >
+                                    GP OFF
                                 </button>
                             </div>
                         </Form>
@@ -726,11 +743,11 @@ export default function TiketPage() {
                                         <strong>{selectedRecord.cust_code}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Perusahaan</span>:<br/>
+                                        <span className="inline-block w-39">Perusahaan</span>:<br />
                                         <strong>{selectedRecord.nama_pelanggan}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Alamat / Area</span>:<br/>
+                                        <span className="inline-block w-39">Alamat / Area</span>:<br />
                                         <strong>{selectedRecord.alamat}</strong>
                                     </p>
                                     <p>
@@ -751,7 +768,7 @@ export default function TiketPage() {
                                     </p>
                                     <p>
                                         <span className="inline-block w-39 align-middle">Target Maks. Kunjungan</span>:{" "}
-                                        <strong class="text-red-500">{formatTargetTiket(selectedRecord)}</strong>
+                                        <strong className="text-red-500">{formatTargetTiket(selectedRecord)}</strong>
                                     </p>
                                     <p>
                                         <span className="inline-block w-39">User</span>:{" "}
@@ -766,7 +783,7 @@ export default function TiketPage() {
                                         <strong>{selectedRecord.teknisi_asist || '-'}</strong>
                                     </p>
                                     <p>
-                                        <span className="inline-block w-39">Catatan Khusus</span>:<br/>
+                                        <span className="inline-block w-39">Catatan Khusus</span>:<br />
                                         <strong>{selectedRecord.catatan || '-'}</strong>
                                     </p>
                                 </div>
@@ -812,7 +829,7 @@ export default function TiketPage() {
                 <BottomPopup
                     open={isFilterVisible}
                     onClose={() => setIsFilterVisible(false)}
-                    title="Filter Karyawan"
+                    title="Filter Pelanggan"
                 >
                     <form
                         onSubmit={(e) => {
