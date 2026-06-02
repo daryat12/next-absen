@@ -678,14 +678,8 @@ export default function TiketPage() {
                             </Form.Item>
 
                             {/* BUTTON */}
-                            <div className="flex justify-end gap-2 mt-8">
-                                <button
-                                    type="button"
-                                    onClick={handleReset}
-                                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer"
-                                >
-                                    Reset
-                                </button>
+                            {/* <div className="flex justify-end gap-2 mt-8"> */}
+                            <div className="flex flex-col gap-2 mt-8">
                                 <button
                                     type="submit"
                                     className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white cursor-pointer"
@@ -706,6 +700,13 @@ export default function TiketPage() {
                                     onClick={() => setActionType("GP OFF")}
                                 >
                                     GP OFF
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleReset}
+                                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 cursor-pointer"
+                                >
+                                    Reset
                                 </button>
                             </div>
                         </Form>
