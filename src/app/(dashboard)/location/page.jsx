@@ -653,7 +653,7 @@ export default function LocationPage() {
         userLocation={coords}
         cluster={applySetting.cluster}
         clusterSort={applySetting.clusterSort}
-        layer="clean"
+        layer="default"
         searchMarker={searchMarker}
         onSelectLocation={(loc) => setSelectedLocation(loc)}
         onSearchMarker={(loc) => setSearchMarker(loc)}
